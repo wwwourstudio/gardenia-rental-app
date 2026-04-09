@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gardenia — Event Rentals</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fff;--sf:#f8f8f8;--sf2:#f1f1f1;
+  --br:#e3e3e3;--br2:#b0b0b0;
+  --ink:#111;--mid:#3a3a3a;--muted:#777;--dim:#bbb;
+  --green:#2e6e4a;--red:#943030;
+  --r:2px;--fd:'Cormorant Garamond',serif;--fb:'Montserrat',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--fb);background:var(--bg);color:var(--ink);font-size:13px;line-height:1.6;-webkit-font-smoothing:antialiased}
+
+/* ── HEADER */
+.hdr{padding:18px 28px 14px;border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.brand{font-family:var(--fd);font-size:24px;font-style:italic;color:var(--ink)}
+.brand small{font-family:var(--fb);font-size:9px;font-style:normal;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);display:block;margin-top:1px}
+#status{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+
+/* ── TOOLBAR */
+.toolbar{padding:9px 28px;border-bottom:1px solid var(--br);background:var(--sf);display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.flbl{font-size:9px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-right:3px}
+.chip{padding:3px 12px;border:1px solid var(--br2);border-radius:100px;font-size:10px;font-family:var(--fb);font-weight:500;letter-spacing:.05em;color:var(--muted);background:transparent;cursor:pointer;transition:all .12s;text-transform:uppercase}
+.chip:hover{border-color:var(--ink);color:var(--ink)}
+.chip.on{border-color:var(--ink);background:var(--ink);color:#fff}
+.srch-w{margin-left:auto;position:relative}
+.srch-w svg{position:absolute;left:9px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--dim)}
+.srch{background:var(--bg);border:1px solid var(--br);border-radius:100px;padding:5px 11px 5px 28px;font-family:var(--fb);font-size:11px;color:var(--ink);width:170px;outline:none;transition:border-color .12s}
+.srch::placeholder{color:var(--dim)}
+.srch:focus{border-color:var(--br2)}
+
+/* ── CATALOG HEADER */
+.cat-hdr{padding:11px 28px;border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between}
+.cat-hdr-t{font-family:var(--fd);font-size:18px;color:var(--ink)}
+.cat-hdr-c{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+
+/* ── GRID */
+.main{padding:18px 28px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px}
+
+/* ── CARD */
+.card{background:var(--bg);border:1px solid var(--br);border-radius:var(--r);overflow:hidden;cursor:pointer;transition:border-color .15s,box-shadow .15s;position:relative;display:flex;flex-direction:column}
+.card:hover{border-color:var(--br2);box-shadow:0 4px 16px rgba(0,0,0,.07)}
+.img-w{overflow:hidden;position:relative}
+.c-img{width:100%;aspect-ratio:4/3;object-fit:cover;background:var(--sf2);display:block;transition:transform .3s}
+.card:hover .c-img{transform:scale(1.04)}
+.c-ph{width:100%;aspect-ratio:4/3;background:var(--sf2);display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:28px;font-family:var(--fd);font-style:italic}
+.av-badge{position:absolute;top:8px;right:8px;padding:3px 8px;border-radius:100px;font-size:9px;font-weight:600;letter-spacing:.09em;text-transform:uppercase}
+.av-yes{background:rgba(255,255,255,.92);color:var(--green);border:1px solid rgba(46,110,74,.25)}
+.av-no{background:rgba(255,255,255,.92);color:var(--dim);border:1px solid var(--br)}
+.c-body{padding:12px 14px 14px;flex:1;display:flex;flex-direction:column}
+.c-cat{font-size:9px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:var(--dim);margin-bottom:3px}
+.c-name{font-family:var(--fd);font-size:16px;color:var(--ink);line-height:1.25;margin-bottom:5px}
+.card:hover .c-name{text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:1px}
+.c-desc{font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;flex:1}
+.c-foot{display:flex;align-items:flex-end;justify-content:space-between;border-top:1px solid var(--br);padding-top:9px;margin-top:auto}
+.c-price-wrap{}
+.c-price{font-family:var(--fd);font-size:19px;color:var(--ink)}
+.c-unit{font-size:10px;color:var(--muted);margin-left:2px}
+.c-dep{font-size:9px;color:var(--dim);margin-top:1px}
+.c-arrow{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--ink);opacity:0;transition:opacity .15s}
+.card:hover .c-arrow{opacity:1}
+
+/* ── PANEL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.36);z-index:100;display:flex;justify-content:flex-end;opacity:0;pointer-events:none;transition:opacity .2s}
+.overlay.on{opacity:1;pointer-events:all}
+.panel{width:460px;max-width:97vw;height:100%;overflow-y:auto;background:var(--bg);border-left:1px solid var(--br);transform:translateX(100%);transition:transform .25s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column}
+.overlay.on .panel{transform:translateX(0)}
+.p-top{position:sticky;top:0;z-index:10;padding:11px 18px;background:var(--bg);border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between}
+.p-brand{font-family:var(--fd);font-size:12px;font-style:italic;color:var(--muted)}
+.btn-x{background:none;border:1px solid var(--br);width:27px;height:27px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;color:var(--muted);transition:all .12s}
+.btn-x:hover{border-color:var(--ink);color:var(--ink)}
+
+/* ── PANEL IMAGE + THUMBS */
+.p-img{width:100%;aspect-ratio:3/2;object-fit:cover;background:var(--sf2);display:block}
+.p-ph{width:100%;aspect-ratio:3/2;background:var(--sf2);display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-size:36px;font-style:italic;color:var(--dim)}
+.thumbs{display:flex;gap:5px;padding:7px 16px;overflow-x:auto;background:var(--sf);border-bottom:1px solid var(--br)}
+.thumb{width:48px;height:36px;object-fit:cover;border-radius:var(--r);border:2px solid transparent;cursor:pointer;flex-shrink:0;transition:border-color .12s}
+.thumb.on{border-color:var(--ink)}.thumb:hover{border-color:var(--br2)}
+
+/* ── PANEL BODY */
+.p-body{padding:16px 20px 28px}
+.p-cat{font-size:9px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-bottom:6px}
+.p-name{font-family:var(--fd);font-size:26px;color:var(--ink);line-height:1.15;margin-bottom:8px}
+.p-desc{font-size:12px;color:var(--mid);line-height:1.75;margin-bottom:16px}
+
+/* ── PRICE STATS */
+.p-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--br);border:1px solid var(--br);margin-bottom:18px}
+.stat{background:var(--sf);padding:10px 12px;text-align:center}
+.stat-l{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);margin-bottom:3px}
+.stat-v{font-family:var(--fd);font-size:18px;color:var(--ink)}
+.stat-s{font-size:10px;color:var(--muted);margin-top:1px}
+
+/* ── CALENDAR */
+.sec-ttl{font-family:var(--fd);font-size:17px;font-style:italic;color:var(--ink);margin-bottom:11px}
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+.cal-mo{font-size:12px;font-weight:600;color:var(--ink)}
+.cal-btn{background:none;border:1px solid var(--br);width:26px;height:26px;border-radius:var(--r);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--muted);transition:all .12s}
+.cal-btn:hover{border-color:var(--ink);color:var(--ink)}
+.cal-g{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.dow{font-size:8px;font-weight:600;text-align:center;color:var(--dim);padding:3px 0;text-transform:uppercase;letter-spacing:.06em}
+.day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:11px;border-radius:var(--r);cursor:pointer;transition:all .1s;border:1px solid transparent;position:relative}
+.day.empty,.day.past{pointer-events:none}
+.day.past{color:var(--dim)}
+.day.booked{background:var(--sf2);color:var(--dim);pointer-events:none;text-decoration:line-through}
+.day:not(.past):not(.empty):not(.booked):hover{border-color:var(--br2);background:var(--sf)}
+.day.start,.day.end{background:var(--ink)!important;color:#fff!important;border-color:var(--ink)!important}
+.day.in-range{background:var(--sf2);color:var(--ink)}
+.day.today::after{content:'';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:3px;height:3px;background:currentColor;border-radius:50%}
+.date-row{display:flex;gap:7px;margin-top:8px;margin-bottom:16px}
+.dp{flex:1;background:var(--sf);border:1px solid var(--br);border-radius:var(--r);padding:7px 11px}
+.dp-l{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);margin-bottom:2px}
+.dp-v{font-size:11px;font-weight:500;color:var(--ink)}
+.dp-v.e{color:var(--dim)}
+
+/* ── PRICE SUMMARY */
+.price-box{background:var(--sf);border:1px solid var(--br);padding:12px;margin-bottom:13px}
+.pl{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:4px}
+.pl.tot{border-top:1px solid var(--br);padding-top:8px;margin-top:6px;margin-bottom:0;font-size:12px;font-weight:500;color:var(--ink)}
+.pl.dep{color:var(--ink-mid);font-weight:500}
+.pl.tot .amt{font-family:var(--fd);font-size:20px}
+
+/* ── FORM */
+.form-sec{border-top:1px solid var(--br);padding-top:15px;margin-top:4px}
+.row{margin-bottom:10px}
+.lbl{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:4px;display:block}
+.inp,.ta{width:100%;background:var(--bg);border:1px solid var(--br);border-radius:var(--r);padding:8px 10px;font-family:var(--fb);font-size:12px;color:var(--ink);outline:none;transition:border-color .12s}
+.inp:focus,.ta:focus{border-color:var(--mid)}
+.inp::placeholder,.ta::placeholder{color:var(--dim)}
+.ta{resize:vertical;min-height:60px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.qty-row{display:flex;align-items:center;gap:9px}
+.qty-ctrl{display:flex;align-items:center;border:1px solid var(--br);border-radius:var(--r);overflow:hidden}
+.qbtn{background:var(--sf2);border:none;color:var(--muted);width:28px;height:28px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s}
+.qbtn:hover{background:var(--br2);color:var(--ink)}
+.qn{padding:0 10px;font-family:var(--fd);font-size:16px;color:var(--ink);min-width:32px;text-align:center;background:var(--bg);height:28px;display:flex;align-items:center;justify-content:center;border-left:1px solid var(--br);border-right:1px solid var(--br)}
+.divider{border:none;border-top:1px solid var(--br);margin:13px 0}
+
+/* ── BUTTONS */
+.cta-row{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:4px}
+.cta-row.one{grid-template-columns:1fr}
+.btn-p{padding:11px;background:var(--ink);color:#fff;border:none;border-radius:var(--r);font-family:var(--fb);font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:opacity .12s;text-align:center;display:block;text-decoration:none;line-height:1.5}
+.btn-p:hover{opacity:.82}
+.btn-p:disabled{opacity:.35;cursor:not-allowed}
+.btn-s{padding:11px;background:transparent;color:var(--ink);border:1px solid var(--ink);border-radius:var(--r);font-family:var(--fb);font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .12s;text-align:center;display:block;text-decoration:none;line-height:1.5}
+.btn-s:hover{background:var(--ink);color:#fff}
+.fn{font-size:10px;color:var(--dim);text-align:center;margin-top:8px;font-style:italic}
+
+/* ── MIN DAYS NOTICE */
+.min-notice{font-size:10px;color:var(--muted);background:var(--sf);border:1px solid var(--br);padding:7px 11px;border-radius:var(--r);margin-bottom:10px;display:none}
+.min-notice.show{display:block}
+
+/* ── STATES */
+.state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:56px 20px;gap:10px;color:var(--muted);text-align:center}
+.s-ico{font-size:28px}
+.s-ttl{font-family:var(--fd);font-size:19px;font-style:italic;color:var(--ink)}
+.s-msg{font-size:12px;max-width:260px;line-height:1.6}
+.spin{width:22px;height:22px;border:2px solid var(--br);border-top-color:var(--ink);border-radius:50%;animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ── SUCCESS */
+.suc{display:flex;flex-direction:column;align-items:center;padding:32px 20px;text-align:center;gap:9px}
+.suc-ico{font-size:34px}
+.suc-ttl{font-family:var(--fd);font-size:24px;font-style:italic;color:var(--ink)}
+.suc-msg{font-size:12px;color:var(--muted);max-width:240px;line-height:1.65}
+.suc-ref{font-size:12px;font-weight:600;letter-spacing:.1em;border:1px solid var(--br);padding:4px 14px}
+.btn-ol{padding:8px 18px;background:transparent;border:1px solid var(--ink);border-radius:var(--r);color:var(--ink);font-family:var(--fb);font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .12s;margin-top:4px}
+.btn-ol:hover{background:var(--ink);color:#fff}
+
+/* ── TOAST */
+.toasts{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:999;display:flex;flex-direction:column;gap:6px;pointer-events:none}
+.toast{padding:8px 14px;border-radius:var(--r);font-size:11px;font-weight:500;border:1px solid;pointer-events:all;white-space:nowrap;animation:ti .2s ease}
+.t-ok{background:var(--bg);color:var(--green);border-color:var(--green)}
+.t-err{background:var(--bg);color:var(--red);border-color:var(--red)}
+.t-inf{background:var(--ink);color:#fff;border-color:var(--ink)}
+@keyframes ti{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+
+@media(max-width:520px){
+  .hdr,.toolbar,.cat-hdr,.main{padding-left:14px;padding-right:14px}
+  .panel{width:100vw;border-left:none}
+  .grid{grid-template-columns:1fr 1fr;gap:10px}
+  .srch{width:100%}.srch-w{margin-left:0;width:100%}
+  .cta-row{grid-template-columns:1fr}
+}
+@media(max-width:350px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="brand">Gardenia<small>Event Decor · Dallas, TX</small></div>
+  <div id="status"></div>
+</header>
+
+<div class="cat-hdr">
+  <div class="cat-hdr-t">Rental Collection</div>
+  <div class="cat-hdr-c" id="cnt"></div>
+</div>
+<div class="toolbar">
+  <span class="flbl">Category:</span>
+  <button class="chip on" onclick="setCat('all',this)">All</button>
+  <div id="cats" style="display:contents"></div>
+  <div class="srch-w">
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input class="srch" type="text" id="srch" placeholder="Search…" oninput="doSearch(this.value)">
+  </div>
+</div>
+
+<main class="main">
+  <div class="state" id="sLoad"><div class="spin"></div><div class="s-ttl">Loading Collection</div><div class="s-msg">Connecting to Gardenia inventory…</div></div>
+  <div class="grid" id="grid" style="display:none"></div>
+  <div class="state" id="sEmpty" style="display:none"><div class="s-ico">🌸</div><div class="s-ttl">No Items Yet</div><div class="s-msg" id="emptyMsg">Add your first rental item in the Wix Content Manager → RentalCatalog collection.</div></div>
+  <div class="state" id="sErr" style="display:none"><div class="s-ico">⚠</div><div class="s-ttl">Connection Error</div><div class="s-msg" id="errMsg">Could not load. Make sure http-functions.js is published in Velo.</div><button class="btn-ol" onclick="load()" style="margin-top:8px">Retry</button></div>
+</main>
+
+<div class="overlay" id="ov" onclick="closeOv(event)">
+  <div class="panel">
+    <div class="p-top"><span class="p-brand">Gardenia Event Decor</span><button class="btn-x" onclick="closePanel()">✕</button></div>
+    <div id="pBody"></div>
+  </div>
+</div>
+<div class="toasts" id="toasts"></div>
+
+<script>
+const BASE        = 'https://www.gardeniaeventdecor.com';
+const CATALOG_URL = BASE + '/_functions/rentalCatalog';
+const BOOKED_URL  = BASE + '/_functions/bookedDates';
+const BOOKING_URL = BASE + '/_functions/rentalBooking';
+
+let all=[], fil=[], activeCat='all', cur=null, qty=1;
+let calYear, calMonth, selStart=null, selEnd=null, picking='start';
+let bookedRanges=[];
+
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAYS=['Su','Mo','Tu','We','Th','Fr','Sa'];
+
+window.onload = load;
+window.addEventListener('message', e=>{
+  if(e.data?.type==='RENTAL_FILTER'){
+    if(e.data.category) setCat(e.data.category,null);
+    if(e.data.search!==undefined) doSearch(e.data.search);
+  }
+});
+
+function toP(d){try{window.parent.postMessage(d,'*')}catch(e){}}
+function setStatus(m,c){const el=document.getElementById('status');el.textContent=m;el.style.color=c||'#bbb'}
+
+// ── LOAD ──────────────────────────────────────────────
+async function load(){
+  show('load'); setStatus('Connecting…');
+  try{
+    const r=await fetch(CATALOG_URL);
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const d=await r.json();
+    if(d.error) throw new Error(d.error);
+    all=d.items||[];
+    if(!all.length){show('empty');setStatus('0 items');return;}
+    buildCats(); applyFilter(); show('grid');
+    setStatus(all.length+' items');
+    document.getElementById('cnt').textContent=all.length+' items';
+    toP({type:'RENTAL_ITEMS_LOADED',count:all.length});
+    setTimeout(()=>toP({type:'RENTAL_HEIGHT',height:document.body.scrollHeight}),100);
+  }catch(e){
+    document.getElementById('errMsg').textContent=e.message||'Failed to connect.';
+    show('err'); setStatus('Error','#943030');
+  }
+}
+
+function show(s){
+  document.getElementById('sLoad').style.display  =s==='load' ?'flex':'none';
+  document.getElementById('grid').style.display   =s==='grid' ?'grid':'none';
+  document.getElementById('sEmpty').style.display =s==='empty'?'flex':'none';
+  document.getElementById('sErr').style.display   =s==='err'  ?'flex':'none';
+}
+
+// ── FILTERS ───────────────────────────────────────────
+function buildCats(){
+  const cs=[...new Set(all.map(i=>i.category).filter(Boolean))];
+  document.getElementById('cats').innerHTML=cs.map(c=>`<button class="chip" onclick="setCat('${esc(c)}',this)">${c}</button>`).join('');
+}
+function setCat(c,btn){
+  activeCat=c;
+  document.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));
+  if(btn)btn.classList.add('on');
+  applyFilter();
+}
+function doSearch(q){applyFilter(q);}
+function applyFilter(ov){
+  const q=(ov!==undefined?ov:document.getElementById('srch').value).toLowerCase();
+  fil=all.filter(i=>(activeCat==='all'||i.category===activeCat)&&(!q||[i.title,i.description,i.category].some(f=>f?.toLowerCase().includes(q))));
+  fil.length?(renderGrid(),show('grid')):show('empty');
+  setTimeout(()=>toP({type:'RENTAL_HEIGHT',height:document.body.scrollHeight}),50);
+}
+
+// ── RENDER GRID ───────────────────────────────────────
+function renderGrid(){
+  document.getElementById('grid').innerHTML=fil.map(item=>{
+    const av=item.available!==false;
+    const img=item.image||'';
+    const p=item.pricePerDay||0;
+    const dep=item.depositAmount||0;
+    return`<div class="card" onclick="openItem('${item._id}')">
+      <div class="img-w">
+        ${img?`<img class="c-img" src="${img}" alt="${esc(item.title)}" loading="lazy" onerror="this.parentNode.innerHTML='<div class=&quot;c-ph&quot;>🌸</div>'">`:`<div class="c-ph">🌸</div>`}
+        <span class="av-badge ${av?'av-yes':'av-no'}">${av?'Available':'Unavailable'}</span>
+      </div>
+      <div class="c-body">
+        ${item.category?`<div class="c-cat">${item.category}</div>`:''}
+        <div class="c-name">${item.title||'Untitled'}</div>
+        <div class="c-desc">${item.description||''}</div>
+        <div class="c-foot">
+          <div class="c-price-wrap">
+            <div><span class="c-price">$${Number(p).toFixed(0)}</span><span class="c-unit">/ day</span></div>
+            ${dep?`<div class="c-dep">$${Number(dep).toFixed(0)} deposit</div>`:''}
+          </div>
+          <span class="c-arrow">Reserve →</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function esc(s){return(s||'').replace(/['"<>&]/g,c=>({'\'':'&#39;','"':'&quot;','<':'&lt;','>':'&gt;','&':'&amp;'}[c]))}
+
+// ── OPEN PANEL ────────────────────────────────────────
+async function openItem(id){
+  cur=all.find(i=>i._id===id); if(!cur)return;
+  qty=1; selStart=null; selEnd=null; picking='start'; bookedRanges=[];
+  const now=new Date(); calYear=now.getFullYear(); calMonth=now.getMonth();
+
+  renderPanel();
+  document.getElementById('ov').classList.add('on');
+  toP({type:'RENTAL_ITEM_SELECTED',itemId:id,itemTitle:cur.title});
+
+  // Load booked dates in background
+  try{
+    const r=await fetch(BOOKED_URL+'?itemId='+id);
+    const d=await r.json();
+    bookedRanges=(d.ranges||[]).map(rng=>({
+      start:new Date(rng.start), end:new Date(rng.end)
+    }));
+    renderCalendar();
+  }catch(e){console.warn('Could not load booked dates',e);}
+}
+function closePanel(){document.getElementById('ov').classList.remove('on');cur=null;}
+function closeOv(e){if(e.target===document.getElementById('ov'))closePanel();}
+
+// ── RENDER PANEL ──────────────────────────────────────
+function renderPanel(){
+  const item=cur,av=item.available!==false,p=Number(item.pricePerDay||0),dep=Number(item.depositAmount||0);
+  const imgs=item.images?item.images.split(',').map(s=>s.trim()).filter(Boolean):[];
+  if(item.image&&!imgs.includes(item.image)) imgs.unshift(item.image);
+  const minD=Number(item.minDays)||1;
+
+  document.getElementById('pBody').innerHTML=`
+    ${imgs.length?`<img class="p-img" id="mainImg" src="${imgs[0]}" alt="${esc(item.title)}">`:`<div class="p-ph">🌸</div>`}
+    ${imgs.length>1?`<div class="thumbs">${imgs.map((s,i)=>`<img class="thumb ${i===0?'on':''}" src="${s}" onclick="swImg('${s}',this)">`).join('')}</div>`:''}
+    <div class="p-body">
+      ${item.category?`<div class="p-cat">${item.category}</div>`:''}
+      <div class="p-name">${item.title||'Item'}</div>
+      ${item.description?`<div class="p-desc">${item.description}</div>`:''}
+      <div class="p-stats">
+        <div class="stat"><div class="stat-l">Rate</div><div class="stat-v">$${p.toFixed(0)}</div><div class="stat-s">per day</div></div>
+        <div class="stat"><div class="stat-l">Deposit</div><div class="stat-v">${dep?'$'+dep.toFixed(0):'—'}</div><div class="stat-s">${dep?'due at booking':'no deposit'}</div></div>
+        <div class="stat"><div class="stat-l">Min Days</div><div class="stat-v">${minD}</div><div class="stat-s">minimum</div></div>
+      </div>
+
+      ${av?`
+      <!-- CALENDAR -->
+      <div class="sec-ttl">Select Rental Dates</div>
+      <div class="min-notice ${minD>1?'show':''}" id="minNotice">Minimum rental: ${minD} day${minD!==1?'s':''}</div>
+      <div class="cal-nav">
+        <button class="cal-btn" onclick="goMonth(-1)">‹</button>
+        <span class="cal-mo" id="calHead"></span>
+        <button class="cal-btn" onclick="goMonth(1)">›</button>
+      </div>
+      <div class="cal-g" id="calG"></div>
+      <div class="date-row">
+        <div class="dp"><div class="dp-l">Pick-Up Date</div><div class="dp-v e" id="dp1">Tap a start date</div></div>
+        <div class="dp"><div class="dp-l">Return Date</div><div class="dp-v e" id="dp2">Tap an end date</div></div>
+      </div>
+
+      <!-- QTY -->
+      <div class="row"><label class="lbl">Quantity</label>
+        <div class="qty-row">
+          <div class="qty-ctrl"><button class="qbtn" onclick="chQ(-1)">−</button><div class="qn" id="qn">1</div><button class="qbtn" onclick="chQ(1)">+</button></div>
+          ${item.quantity?`<span style="font-size:10px;color:var(--dim)">${item.quantity} available</span>`:''}
+        </div>
+      </div>
+
+      <!-- PRICE SUMMARY -->
+      <div class="price-box">
+        <div class="pl"><span>Rate</span><span>$${p.toFixed(2)} / day</span></div>
+        <div class="pl" id="pl-days"><span>Duration</span><span id="pv-days" style="color:var(--dim)">Select dates</span></div>
+        <div class="pl" id="pl-qty"><span>Quantity</span><span id="pv-qty">× 1</span></div>
+        ${dep?`<div class="pl dep"><span>Deposit Due Now</span><span id="pv-dep">$${(dep*1).toFixed(2)}</span></div>`:''}
+        <div class="pl tot"><span>Total Rental</span><span class="amt" id="pv-tot">—</span></div>
+      </div>
+
+      <hr class="divider">
+
+      <!-- CONTACT FORM -->
+      <div class="form-sec">
+        <div class="sec-ttl">Your Details</div>
+        <div class="row2">
+          <div class="row" style="margin-bottom:0"><label class="lbl">First Name</label><input class="inp" id="fn" type="text" placeholder="Jane"></div>
+          <div class="row" style="margin-bottom:0"><label class="lbl">Last Name</label><input class="inp" id="ln" type="text" placeholder="Smith"></div>
+        </div>
+        <div class="row" style="margin-top:10px"><label class="lbl">Email</label><input class="inp" id="em" type="email" placeholder="you@example.com"></div>
+        <div class="row"><label class="lbl">Phone</label><input class="inp" id="ph" type="tel" placeholder="+1 (214) 000-0000"></div>
+        <div class="row"><label class="lbl">Event Details <span style="text-transform:none;font-weight:400;color:var(--dim)">(optional)</span></label><textarea class="ta" id="nt" placeholder="Wedding, quinceañera, corporate — venue, date, theme…"></textarea></div>
+      </div>
+
+      <!-- CTAs -->
+      <div class="${item.bookingSlug?'cta-row':'cta-row one'}">
+        ${item.bookingSlug?`<a class="btn-s" href="https://www.gardeniaeventdecor.com/booking-calendar/${item.bookingSlug}" target="_blank">Book &amp; Pay ↗</a>`:''}
+        <button class="btn-p" id="quoteBtn" onclick="submitQuote()">Send Quote Request</button>
+      </div>
+      <p class="fn">Gardenia will confirm within 24 hours.</p>
+      `:`<div style="text-align:center;padding:22px 0;color:var(--muted);font-size:12px;font-style:italic">Currently unavailable. Contact us for alternatives.</div>`}
+    </div>`;
+
+  if(av) renderCalendar();
+}
+
+function swImg(src,el){document.getElementById('mainImg').src=src;document.querySelectorAll('.thumb').forEach(t=>t.classList.remove('on'));el.classList.add('on');}
+
+// ── CALENDAR ──────────────────────────────────────────
+function renderCalendar(){
+  const now=new Date(); now.setHours(0,0,0,0);
+  const firstDay=new Date(calYear,calMonth,1).getDay();
+  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+  document.getElementById('calHead').textContent=MONTHS[calMonth]+' '+calYear;
+  let html=DAYS.map(d=>`<div class="dow">${d}</div>`).join('');
+  for(let i=0;i<firstDay;i++) html+=`<div class="day empty"></div>`;
+  for(let d=1;d<=daysInMonth;d++){
+    const date=new Date(calYear,calMonth,d);
+    const ds=dstr(date);
+    const isPast=date<now;
+    const isBooked=isDateBooked(date);
+    const isStart=selStart&&ds===dstr(selStart);
+    const isEnd=selEnd&&ds===dstr(selEnd);
+    const inRange=selStart&&selEnd&&date>selStart&&date<selEnd;
+    const isToday=ds===dstr(now);
+    let cls='day';
+    if(isPast)  cls+=' past';
+    if(isBooked&&!isPast) cls+=' booked';
+    if(isStart) cls+=' start';
+    if(isEnd)   cls+=' end';
+    if(inRange) cls+=' in-range';
+    if(isToday) cls+=' today';
+    html+=`<div class="${cls}" onclick="pickDay('${ds}')">${d}</div>`;
+  }
+  document.getElementById('calG').innerHTML=html;
+}
+
+function isDateBooked(date){
+  return bookedRanges.some(r=>date>=r.start&&date<=r.end);
+}
+
+function goMonth(d){
+  calMonth+=d;
+  if(calMonth<0){calMonth=11;calYear--;} if(calMonth>11){calMonth=0;calYear++;}
+  renderCalendar();
+}
+
+function pickDay(ds){
+  const date=new Date(ds+'T00:00:00');
+  if(isDateBooked(date)) return;
+  if(picking==='start'||(selStart&&selEnd)){
+    selStart=date; selEnd=null; picking='end';
+  } else {
+    if(date<=selStart){selStart=date;selEnd=null;picking='end';}
+    else{
+      // Check min days
+      const minD=Number(cur?.minDays)||1;
+      const days=Math.round((date-selStart)/86400000);
+      if(days<minD){toast(`Minimum ${minD} days required`,'err');return;}
+      selEnd=date; picking='start';
+    }
+  }
+  renderCalendar(); updateDates(); updatePrice();
+}
+
+function updateDates(){
+  const d1=document.getElementById('dp1'),d2=document.getElementById('dp2');
+  if(d1){d1.textContent=selStart?fmtD(selStart):'Tap a start date';d1.className='dp-v'+(selStart?'':' e');}
+  if(d2){d2.textContent=selEnd?fmtD(selEnd):'Tap an end date';d2.className='dp-v'+(selEnd?'':' e');}
+}
+
+function updatePrice(){
+  const p=Number(cur?.pricePerDay||0),dep=Number(cur?.depositAmount||0);
+  if(!selStart||!selEnd){
+    document.getElementById('pv-days').textContent='Select dates';
+    document.getElementById('pv-days').style.color='var(--dim)';
+    document.getElementById('pv-qty').textContent='× '+qty;
+    document.getElementById('pv-tot').textContent='—';
+    if(document.getElementById('pv-dep')) document.getElementById('pv-dep').textContent='$'+(dep*qty).toFixed(2);
+    return;
+  }
+  const days=Math.max(1,Math.round((selEnd-selStart)/86400000));
+  const tot=p*days*qty;
+  document.getElementById('pv-days').textContent=days+' day'+(days!==1?'s':'');
+  document.getElementById('pv-days').style.color='var(--ink)';
+  document.getElementById('pv-qty').textContent='× '+qty;
+  document.getElementById('pv-tot').textContent='$'+tot.toFixed(2);
+  if(document.getElementById('pv-dep')) document.getElementById('pv-dep').textContent='$'+(dep*qty).toFixed(2);
+}
+
+function chQ(d){qty=Math.max(1,Math.min(cur?.quantity||99,qty+d));document.getElementById('qn').textContent=qty;updatePrice();}
+function dstr(d){return d.toISOString().split('T')[0];}
+function fmtD(d){return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
+
+// ── SUBMIT QUOTE ──────────────────────────────────────
+async function submitQuote(){
+  if(!selStart||!selEnd){toast('Please select your rental dates on the calendar','err');return;}
+  const minD=Number(cur?.minDays)||1;
+  const days=Math.max(1,Math.round((selEnd-selStart)/86400000));
+  if(days<minD){toast(`Minimum rental is ${minD} days`,'err');return;}
+  const fn=document.getElementById('fn').value.trim();
+  const ln=document.getElementById('ln').value.trim();
+  const em=document.getElementById('em').value.trim();
+  const ph=document.getElementById('ph').value.trim();
+  const nt=document.getElementById('nt').value.trim();
+  if(!fn||!ln){toast('Please enter your name','err');return;}
+  if(!em||!/\S+@\S+\.\S+/.test(em)){toast('Valid email required','err');return;}
+
+  const btn=document.getElementById('quoteBtn');
+  btn.disabled=true; btn.textContent='Sending…';
+
+  const p=Number(cur?.pricePerDay||0), dep=Number(cur?.depositAmount||0), tot=p*days*qty;
+  try{
+    const r=await fetch(BOOKING_URL,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        firstName:fn,lastName:ln,email:em,phone:ph,
+        itemId:cur._id,itemTitle:cur.title||'',
+        pricePerDay:p,depositAmount:dep,
+        startDate:dstr(selStart),endDate:dstr(selEnd),
+        days,quantity:qty,total:tot,notes:nt
+      })
+    });
+    const d=await r.json();
+    if(!r.ok||d.error) throw new Error(d.error||'HTTP '+r.status);
+    showSuccess(d.ref||d.bookingId,em,tot,dep*qty);
+    toP({type:'RENTAL_BOOKING_CREATED',ref:d.ref,itemTitle:cur.title,email:em,total:tot});
+  }catch(e){
+    toast('Could not submit: '+(e.message||'Unknown error'),'err');
+    btn.disabled=false; btn.textContent='Send Quote Request';
+  }
+}
+
+function showSuccess(ref,em,tot,dep){
+  document.getElementById('pBody').innerHTML=`
+    <div class="suc">
+      <div class="suc-ico">🌸</div>
+      <div class="suc-ttl">Quote Request Sent!</div>
+      <div class="suc-msg">Thank you! Gardenia will review availability and send a confirmed quote to <strong>${em}</strong> within 24 hours.</div>
+      <div class="suc-ref">${ref}</div>
+      <div style="font-size:11px;color:var(--muted)">
+        Total: $${Number(tot).toFixed(2)}${dep?' · Deposit: $'+Number(dep).toFixed(2):''}
+      </div>
+      <button class="btn-ol" onclick="closePanel();load()">Browse More Items</button>
+    </div>`;
+  toast('Request sent — '+ref,'ok');
+}
+
+function toast(msg,type='inf',dur=4000){
+  const c=document.getElementById('toasts'),t=document.createElement('div');
+  t.className='toast t-'+(type==='ok'?'ok':type==='err'?'err':'inf');
+  t.textContent=msg;c.appendChild(t);
+  setTimeout(()=>{t.style.transition='opacity .25s';t.style.opacity='0';setTimeout(()=>t.remove(),300);},dur);
+}
+</script>
+</body>
+</html>

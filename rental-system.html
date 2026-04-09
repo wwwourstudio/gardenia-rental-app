@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Event Item Rental</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#ffffff;--surface:#fafafa;--surface2:#f3f3f3;--border:#e0e0e0;--border-dark:#c0c0c0;--ink:#111111;--ink-mid:#444444;--ink-muted:#888888;--ink-dim:#bbbbbb;--accent:#111111;--accent-inv:#ffffff;--green:#2a7a52;--red:#b03030;--radius:3px;--font-display:'Playfair Display',serif;--font-body:'Jost',sans-serif;--shadow-lg:0 12px 48px rgba(0,0,0,0.14);}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--font-body);background:var(--bg);color:var(--ink);min-height:100vh;font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased;}
+.header{padding:24px 32px 20px;border-bottom:1px solid var(--border);display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+.header-eyebrow{font-size:10px;font-weight:500;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-muted);}
+.header-title{font-family:var(--font-display);font-size:30px;font-weight:500;color:var(--ink);line-height:1.1;}
+.header-count{font-size:11px;color:var(--ink-muted);margin-top:4px;}
+#connectionStatus{font-size:11px;color:var(--ink-muted);}
+.filter-bar{padding:12px 32px;border-bottom:1px solid var(--border);display:flex;gap:6px;align-items:center;flex-wrap:wrap;background:var(--surface);}
+.filter-label{font-size:10px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-dim);margin-right:4px;}
+.filter-chip{padding:5px 14px;border:1px solid var(--border);border-radius:2px;font-size:11px;font-family:var(--font-body);font-weight:500;letter-spacing:0.06em;color:var(--ink-muted);background:var(--bg);cursor:pointer;transition:all 0.12s;text-transform:uppercase;}
+.filter-chip:hover{border-color:var(--ink-mid);color:var(--ink);}
+.filter-chip.active{border-color:var(--ink);color:var(--accent-inv);background:var(--accent);}
+.search-input{margin-left:auto;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:7px 14px;font-family:var(--font-body);font-size:13px;color:var(--ink);width:220px;outline:none;transition:border-color .12s;}
+.search-input::placeholder{color:var(--ink-dim);}
+.search-input:focus{border-color:var(--ink-mid);}
+.main{padding:28px 32px;}
+.catalog-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);}
+.item-card{background:var(--bg);cursor:pointer;transition:background .12s;position:relative;display:flex;flex-direction:column;}
+.item-card:hover{background:var(--surface);}
+.item-img{width:100%;aspect-ratio:4/3;object-fit:cover;background:var(--surface2);display:block;}
+.item-img-placeholder{width:100%;aspect-ratio:4/3;background:var(--surface2);display:flex;align-items:center;justify-content:center;color:var(--ink-dim);font-size:40px;}
+.item-badge{position:absolute;top:10px;left:10px;padding:3px 9px;border-radius:2px;font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;}
+.badge-available{background:var(--ink);color:var(--bg);}
+.badge-unavailable{background:var(--ink-dim);color:var(--bg);}
+.item-body{padding:16px 18px 18px;flex:1;display:flex;flex-direction:column;}
+.item-category{font-size:9px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-muted);margin-bottom:5px;}
+.item-name{font-family:var(--font-display);font-size:18px;font-weight:500;color:var(--ink);line-height:1.3;margin-bottom:6px;}
+.item-card:hover .item-name{text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px;}
+.item-desc{font-size:12px;color:var(--ink-muted);line-height:1.55;margin-bottom:14px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;flex:1;}
+.item-footer{display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border);padding-top:12px;margin-top:auto;}
+.item-price{font-family:var(--font-display);font-size:20px;font-weight:500;color:var(--ink);}
+.item-price-unit{font-size:11px;color:var(--ink-muted);font-family:var(--font-body);font-weight:300;margin-left:2px;}
+.item-qty{font-size:11px;color:var(--ink-muted);}
+.detail-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:100;display:flex;align-items:flex-start;justify-content:flex-end;opacity:0;pointer-events:none;transition:opacity .22s;}
+.detail-overlay.open{opacity:1;pointer-events:all;}
+.detail-panel{width:420px;max-width:96vw;height:100%;overflow-y:auto;background:var(--bg);border-left:1px solid var(--border);transform:translateX(100%);transition:transform .28s cubic-bezier(0.4,0,0.2,1);display:flex;flex-direction:column;}
+.detail-overlay.open .detail-panel{transform:translateX(0);}
+.detail-close{position:sticky;top:0;z-index:10;padding:14px 20px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.detail-close-label{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-muted);}
+.btn-icon{background:none;border:1px solid var(--border);border-radius:var(--radius);color:var(--ink-muted);cursor:pointer;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .12s;}
+.btn-icon:hover{border-color:var(--ink);color:var(--ink);}
+.detail-img{width:100%;aspect-ratio:16/9;object-fit:cover;background:var(--surface2);display:block;}
+.detail-img-placeholder{width:100%;aspect-ratio:16/9;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:56px;color:var(--ink-dim);}
+.detail-content{padding:22px 24px;flex:1;}
+.detail-category{font-size:9px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-muted);margin-bottom:7px;}
+.detail-name{font-family:var(--font-display);font-size:28px;font-weight:500;color:var(--ink);line-height:1.2;margin-bottom:12px;}
+.detail-desc{font-size:13px;color:var(--ink-mid);line-height:1.7;margin-bottom:20px;}
+.detail-meta{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:22px;}
+.meta-box{background:var(--surface);padding:12px 14px;}
+.meta-label{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-muted);margin-bottom:4px;}
+.meta-value{font-family:var(--font-display);font-size:22px;font-weight:500;color:var(--ink);}
+.meta-sub{font-size:11px;color:var(--ink-muted);margin-top:2px;}
+.booking-form{border-top:1px solid var(--border);padding-top:20px;}
+.form-title{font-family:var(--font-display);font-size:20px;font-weight:500;color:var(--ink);margin-bottom:16px;}
+.form-row{margin-bottom:13px;}
+.form-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-muted);margin-bottom:5px;display:block;}
+.form-input,.form-select,.form-textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;font-family:var(--font-body);font-size:13px;color:var(--ink);outline:none;transition:border-color .12s;}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--ink);}
+.form-input::placeholder,.form-textarea::placeholder{color:var(--ink-dim);}
+.form-textarea{resize:vertical;min-height:72px;}
+.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.qty-control{display:flex;align-items:center;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;width:fit-content;}
+.qty-btn{background:var(--surface2);border:none;color:var(--ink-muted);width:34px;height:34px;font-size:18px;cursor:pointer;transition:all .12s;display:flex;align-items:center;justify-content:center;}
+.qty-btn:hover{background:var(--border-dark);color:var(--ink);}
+.qty-display{padding:0 16px;font-family:var(--font-display);font-size:18px;font-weight:500;color:var(--ink);min-width:48px;text-align:center;background:var(--bg);height:34px;display:flex;align-items:center;justify-content:center;border-left:1px solid var(--border);border-right:1px solid var(--border);}
+.price-summary{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px;}
+.price-row{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-muted);margin-bottom:6px;}
+.price-row.total{border-top:1px solid var(--border);padding-top:10px;margin-top:8px;margin-bottom:0;font-size:13px;font-weight:500;color:var(--ink);}
+.price-row.total .amount{font-family:var(--font-display);font-size:20px;color:var(--ink);font-weight:500;}
+.btn-primary{width:100%;padding:12px;background:var(--ink);color:var(--bg);border:none;border-radius:var(--radius);font-family:var(--font-body);font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:opacity .12s;}
+.btn-primary:hover{opacity:.85;}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed;}
+.form-note{font-size:11px;color:var(--ink-dim);text-align:center;margin-top:10px;}
+.state-container{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:64px 20px;gap:10px;color:var(--ink-muted);text-align:center;}
+.state-icon{font-size:36px;}
+.state-title{font-family:var(--font-display);font-size:20px;color:var(--ink);}
+.state-msg{font-size:13px;max-width:300px;}
+.spinner{width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--ink);border-radius:50%;animation:spin .75s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.toast-container{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:999;display:flex;flex-direction:column;gap:8px;pointer-events:none;}
+.toast{padding:11px 18px;border-radius:var(--radius);font-size:12px;font-weight:500;border:1px solid;animation:toastIn .2s ease;pointer-events:all;white-space:nowrap;}
+.toast-success{background:var(--bg);color:var(--green);border-color:var(--green);}
+.toast-error{background:var(--bg);color:var(--red);border-color:var(--red);}
+.toast-info{background:var(--ink);color:var(--bg);border-color:var(--ink);}
+@keyframes toastIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.config-overlay{position:fixed;inset:0;background:var(--bg);z-index:200;display:flex;align-items:center;justify-content:center;padding:24px;}
+.config-box{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:36px;width:100%;max-width:460px;box-shadow:var(--shadow-lg);}
+.config-eyebrow{font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-muted);margin-bottom:6px;}
+.config-title{font-family:var(--font-display);font-size:26px;font-weight:500;color:var(--ink);margin-bottom:6px;}
+.config-sub{font-size:13px;color:var(--ink-muted);margin-bottom:24px;}
+.config-note{margin-top:14px;padding:12px 14px;background:var(--surface2);border-left:3px solid var(--border-dark);font-size:11px;color:var(--ink-muted);line-height:1.65;}
+.config-note code{font-size:10px;background:var(--border);padding:1px 4px;border-radius:2px;}
+.success-view{display:flex;flex-direction:column;align-items:center;padding:40px 24px;text-align:center;gap:10px;}
+.success-icon{font-size:44px;}
+.success-title{font-family:var(--font-display);font-size:26px;color:var(--ink);}
+.success-msg{font-size:13px;color:var(--ink-muted);max-width:280px;}
+.success-ref{font-size:13px;font-weight:600;letter-spacing:.08em;color:var(--ink);border:1px solid var(--border);padding:6px 16px;border-radius:var(--radius);}
+.btn-outline{padding:10px 24px;background:transparent;border:1px solid var(--ink);border-radius:var(--radius);color:var(--ink);font-family:var(--font-body);font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:all .12s;margin-top:6px;}
+.btn-outline:hover{background:var(--ink);color:var(--bg);}
+@media(max-width:540px){.header,.filter-bar,.main{padding-left:18px;padding-right:18px;}.detail-panel{width:100vw;border-left:none;}.catalog-grid{grid-template-columns:1fr 1fr;}.search-input{width:100%;margin-left:0;}}
+@media(max-width:380px){.catalog-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="config-overlay" id="configOverlay" style="display:none">
+  <div class="config-box">
+    <div class="config-eyebrow">Setup</div>
+    <div class="config-title">Connect Your Wix Site</div>
+    <div class="config-sub">Enter your Wix credentials to load your rental inventory.</div>
+    <div class="form-row"><label class="form-label">Wix Site ID</label><input class="form-input" id="cfg-siteId" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"></div>
+    <div class="form-row"><label class="form-label">Wix API Key</label><input class="form-input" id="cfg-apiKey" placeholder="IST.eyJ…"></div>
+    <div class="form-row"><label class="form-label">CMS Collection ID</label><input class="form-input" id="cfg-collection" placeholder="RentalItems" value="RentalItems"></div>
+    <button class="btn-primary" onclick="applyConfig()">Connect →</button>
+    <div class="config-note">When embedding in Wix via iframe, pass credentials as URL params:<br><code>?siteId=xxx&amp;apiKey=IST.xxx&amp;collection=RentalItems</code><br><br>Or use the Wix Velo code to inject them securely from the backend.</div>
+  </div>
+</div>
+<header class="header">
+  <div>
+    <div class="header-eyebrow">Event Rentals</div>
+    <div class="header-title">Browse Inventory</div>
+    <div class="header-count" id="catalogCount"></div>
+  </div>
+  <div id="connectionStatus"></div>
+</header>
+<div class="filter-bar">
+  <span class="filter-label">Filter:</span>
+  <button class="filter-chip active" onclick="filterCategory('all',this)">All</button>
+  <div id="categoryFilters" style="display:contents"></div>
+  <input class="search-input" type="text" placeholder="Search items…" id="searchInput" oninput="handleSearch(this.value)">
+</div>
+<main class="main">
+  <div class="state-container" id="loadingState"><div class="spinner"></div><div class="state-title">Loading Inventory</div><div class="state-msg">Connecting to your Wix collection…</div></div>
+  <div class="catalog-grid" id="catalogGrid" style="display:none"></div>
+  <div class="state-container" id="emptyState" style="display:none"><div class="state-icon">📦</div><div class="state-title">No Items Found</div><div class="state-msg">Try adjusting your filters, or add items to your Wix CMS collection.</div></div>
+  <div class="state-container" id="errorState" style="display:none"><div class="state-icon">⚠</div><div class="state-title">Connection Error</div><div class="state-msg" id="errorMsg">Could not reach your Wix collection.</div><button class="btn-outline" onclick="loadItems()" style="margin-top:4px">Retry</button></div>
+</main>
+<div class="detail-overlay" id="detailOverlay" onclick="closeDetail(event)">
+  <div class="detail-panel">
+    <div class="detail-close"><span class="detail-close-label">Item Detail</span><button class="btn-icon" onclick="closeDetailPanel()">✕</button></div>
+    <div id="detailBody"></div>
+  </div>
+</div>
+<div class="toast-container" id="toastContainer"></div>
+<script>
+const WIX_DATA_API='https://www.wixapis.com/wix-data/v2/items/query';
+const WIX_BOOKINGS_CREATE='https://www.wixapis.com/bookings/v2/bookings';
+let CFG={siteId:'',apiKey:'',collection:'RentalItems'};
+let allItems=[],filteredItems=[],activeCategory='all',currentItem=null,bookingQty=1;
+(function init(){
+  const p=new URLSearchParams(window.location.search);
+  CFG.siteId=p.get('siteId')||'';CFG.apiKey=p.get('apiKey')||'';CFG.collection=p.get('collection')||'RentalItems';
+  window.addEventListener('message',e=>{
+    if(!e.data)return;
+    if(e.data.type==='RENTAL_CONFIG'){CFG.siteId=e.data.siteId||CFG.siteId;CFG.apiKey=e.data.apiKey||CFG.apiKey;CFG.collection=e.data.collection||CFG.collection;loadItems();}
+    if(e.data.type==='RENTAL_FILTER'){if(e.data.category)filterCategory(e.data.category,null);if(e.data.search!==undefined)handleSearch(e.data.search);}
+  });
+  if(!CFG.siteId||!CFG.apiKey){document.getElementById('configOverlay').style.display='flex';setStatus('Not connected','#bbb');return;}
+  loadItems();notifyParent({type:'RENTAL_READY'});
+})();
+function notifyParent(d){try{window.parent.postMessage(d,'*');}catch(e){}}
+function resizeParent(){notifyParent({type:'RENTAL_HEIGHT',height:document.body.scrollHeight});}
+function setStatus(m,c){const el=document.getElementById('connectionStatus');el.textContent=m;el.style.color=c||'#888';}
+function applyConfig(){CFG.siteId=document.getElementById('cfg-siteId').value.trim();CFG.apiKey=document.getElementById('cfg-apiKey').value.trim();CFG.collection=document.getElementById('cfg-collection').value.trim()||'RentalItems';if(!CFG.siteId||!CFG.apiKey){showToast('Enter Site ID and API Key','error');return;}document.getElementById('configOverlay').style.display='none';loadItems();}
+async function loadItems(){
+  showState('loading');setStatus('Connecting…','#aaa');
+  try{
+    const resp=await fetch(WIX_DATA_API,{method:'POST',headers:{'Content-Type':'application/json','Authorization':CFG.apiKey,'wix-site-id':CFG.siteId},body:JSON.stringify({dataCollectionId:CFG.collection,query:{paging:{limit:100},sort:[{fieldName:'title',order:'ASC'}]}})});
+    if(!resp.ok){const err=await resp.json().catch(()=>({}));throw new Error(err.message||`HTTP ${resp.status}`);}
+    const data=await resp.json();
+    allItems=(data.dataItems||[]).map(di=>({id:di.id,...di.data}));
+    if(allItems.length===0){showState('empty');setStatus('Connected — 0 items','#888');return;}
+    buildCategoryFilters();applyFilters();showState('grid');
+    setStatus(`${allItems.length} items`,'#888');
+    document.getElementById('catalogCount').textContent=`${allItems.length} items available`;
+    notifyParent({type:'RENTAL_ITEMS_LOADED',count:allItems.length});setTimeout(resizeParent,100);
+  }catch(e){document.getElementById('errorMsg').textContent=e.message||'Connection failed.';showState('error');setStatus('Error','#b03030');}
+}
+function showState(s){document.getElementById('loadingState').style.display=s==='loading'?'flex':'none';document.getElementById('catalogGrid').style.display=s==='grid'?'grid':'none';document.getElementById('emptyState').style.display=s==='empty'?'flex':'none';document.getElementById('errorState').style.display=s==='error'?'flex':'none';}
+function buildCategoryFilters(){const cats=[...new Set(allItems.map(i=>i.category).filter(Boolean))];document.getElementById('categoryFilters').innerHTML=cats.map(c=>`<button class="filter-chip" onclick="filterCategory('${c}',this)">${c}</button>`).join('');}
+function filterCategory(cat,btn){activeCategory=cat;document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));if(btn)btn.classList.add('active');applyFilters();}
+function handleSearch(q){applyFilters(q);}
+function applyFilters(searchOverride){const q=(searchOverride!==undefined?searchOverride:document.getElementById('searchInput').value).toLowerCase();filteredItems=allItems.filter(item=>{const catOk=activeCategory==='all'||item.category===activeCategory;const searchOk=!q||[item.title,item.description,item.category].some(f=>f?.toLowerCase().includes(q));return catOk&&searchOk;});filteredItems.length===0?showState('empty'):(renderGrid(),showState('grid'));setTimeout(resizeParent,50);}
+function renderGrid(){document.getElementById('catalogGrid').innerHTML=filteredItems.map(item=>{const avail=item.available!==false;const img=item.image?.url||item.mainMedia?.url||item.thumbnail||'';const price=item.pricePerDay||item.price||0;return `<div class="item-card" onclick="openDetail('${item.id}')">${img?`<img class="item-img" src="${img}" alt="${item.title||''}" loading="lazy" onerror="this.style.display='none'">`:`<div class="item-img-placeholder">🎪</div>`}<span class="item-badge ${avail?'badge-available':'badge-unavailable'}">${avail?'Available':'Unavailable'}</span><div class="item-body">${item.category?`<div class="item-category">${item.category}</div>`:''}<div class="item-name">${item.title||'Untitled'}</div><div class="item-desc">${item.description||''}</div><div class="item-footer"><div><span class="item-price">$${Number(price).toFixed(0)}</span><span class="item-price-unit">/ day</span></div>${item.quantity!=null?`<div class="item-qty">Qty: ${item.quantity}</div>`:''}</div></div></div>`;}).join('');}
+function openDetail(id){currentItem=allItems.find(i=>i.id===id);if(!currentItem)return;bookingQty=1;renderDetail();document.getElementById('detailOverlay').classList.add('open');notifyParent({type:'RENTAL_ITEM_SELECTED',itemId:id,itemTitle:currentItem.title});}
+function closeDetailPanel(){document.getElementById('detailOverlay').classList.remove('open');currentItem=null;}
+function closeDetail(e){if(e.target===document.getElementById('detailOverlay'))closeDetailPanel();}
+function renderDetail(){
+  const item=currentItem,avail=item.available!==false,price=Number(item.pricePerDay||item.price||0);
+  const img=item.image?.url||item.mainMedia?.url||item.thumbnail||'';
+  const today=new Date().toISOString().split('T')[0],tmrw=new Date(Date.now()+86400000).toISOString().split('T')[0];
+  document.getElementById('detailBody').innerHTML=`${img?`<img class="detail-img" src="${img}" alt="${item.title||''}">`:`<div class="detail-img-placeholder">🎪</div>`}<div class="detail-content">${item.category?`<div class="detail-category">${item.category}</div>`:''}<div class="detail-name">${item.title||'Untitled'}</div><div class="detail-desc">${item.description||''}</div><div class="detail-meta"><div class="meta-box"><div class="meta-label">Daily Rate</div><div class="meta-value">$${price.toFixed(0)}</div><div class="meta-sub">per day</div></div><div class="meta-box"><div class="meta-label">Status</div><div class="meta-value" style="font-size:16px;color:${avail?'var(--green)':'var(--red)'}">${avail?'Available':'Unavailable'}</div>${item.quantity!=null?`<div class="meta-sub">${item.quantity} in stock</div>`:''}</div></div>${avail?`<div class="booking-form"><div class="form-title">Reserve This Item</div><div class="form-row-2"><div class="form-row" style="margin-bottom:0"><label class="form-label">Start Date</label><input class="form-input" type="date" id="bf-start" value="${today}" min="${today}" onchange="updateSummary()"></div><div class="form-row" style="margin-bottom:0"><label class="form-label">End Date</label><input class="form-input" type="date" id="bf-end" value="${tmrw}" min="${today}" onchange="updateSummary()"></div></div><div class="form-row" style="margin-top:13px"><label class="form-label">Quantity</label><div class="qty-control"><button class="qty-btn" onclick="changeQty(-1)">−</button><div class="qty-display" id="qtyDisplay">1</div><button class="qty-btn" onclick="changeQty(1)">+</button></div></div><div class="form-row-2" style="margin-top:13px"><div class="form-row" style="margin-bottom:0"><label class="form-label">First Name</label><input class="form-input" type="text" id="bf-first" placeholder="Jane"></div><div class="form-row" style="margin-bottom:0"><label class="form-label">Last Name</label><input class="form-input" type="text" id="bf-last" placeholder="Smith"></div></div><div class="form-row" style="margin-top:13px"><label class="form-label">Email</label><input class="form-input" type="email" id="bf-email" placeholder="you@example.com"></div><div class="form-row"><label class="form-label">Phone</label><input class="form-input" type="tel" id="bf-phone" placeholder="+1 555 000 0000"></div><div class="form-row"><label class="form-label">Notes <span style="text-transform:none;font-weight:400;color:var(--ink-dim)">(optional)</span></label><textarea class="form-textarea" id="bf-notes" placeholder="Event type, venue, requirements…"></textarea></div><div class="price-summary"><div class="price-row"><span>Daily Rate</span><span>$${price.toFixed(2)}</span></div><div class="price-row" id="ps-days"><span>Duration</span><span>1 day</span></div><div class="price-row" id="ps-qty"><span>Quantity</span><span>× 1</span></div><div class="price-row total"><span>Estimated Total</span><span class="amount" id="ps-total">$${price.toFixed(2)}</span></div></div><button class="btn-primary" onclick="submitBooking()" id="bookBtn">Confirm Reservation</button><p class="form-note">Confirmation sent to your email.</p></div>`:`<div style="text-align:center;padding:24px 0;color:var(--ink-muted);font-size:13px">This item is currently unavailable.</div>`}</div>`;
+}
+function changeQty(d){bookingQty=Math.max(1,Math.min(currentItem?.quantity||99,bookingQty+d));document.getElementById('qtyDisplay').textContent=bookingQty;updateSummary();}
+function updateSummary(){const s=new Date(document.getElementById('bf-start').value),e=new Date(document.getElementById('bf-end').value),p=Number(currentItem?.pricePerDay||currentItem?.price||0);let days=Math.max(1,Math.round((e-s)/86400000));if(isNaN(days))days=1;const total=p*days*bookingQty;document.getElementById('ps-days').innerHTML=`<span>Duration</span><span>${days} day${days!==1?'s':''}</span>`;document.getElementById('ps-qty').innerHTML=`<span>Quantity</span><span>× ${bookingQty}</span>`;document.getElementById('ps-total').textContent=`$${total.toFixed(2)}`;}
+async function submitBooking(){
+  const first=document.getElementById('bf-first').value.trim(),last=document.getElementById('bf-last').value.trim(),email=document.getElementById('bf-email').value.trim(),phone=document.getElementById('bf-phone').value.trim(),notes=document.getElementById('bf-notes').value.trim(),start=document.getElementById('bf-start').value,end=document.getElementById('bf-end').value;
+  if(!first||!last){showToast('Please enter your name','error');return;}
+  if(!email||!/\S+@\S+\.\S+/.test(email)){showToast('Please enter a valid email','error');return;}
+  if(!start||!end||new Date(end)<=new Date(start)){showToast('Check your dates','error');return;}
+  const btn=document.getElementById('bookBtn');btn.disabled=true;btn.textContent='Processing…';
+  const item=currentItem,price=Number(item.pricePerDay||item.price||0),days=Math.max(1,Math.round((new Date(end)-new Date(start))/86400000)),total=price*days*bookingQty;
+  const payload={booking:{contactDetails:{firstName:first,lastName:last,email,phone:phone||undefined},additionalFields:{fields:[{id:'itemId',value:{stringValue:item.id}},{id:'itemTitle',value:{stringValue:item.title||''}},{id:'quantity',value:{numberValue:bookingQty}},{id:'notes',value:{stringValue:notes}},{id:'total',value:{numberValue:total}}]},...(item.bookingServiceId?{bookedEntity:{slot:{serviceId:item.bookingServiceId,startDate:new Date(start).toISOString(),endDate:new Date(end).toISOString()}}}:{})}};
+  try{
+    const resp=await fetch(WIX_BOOKINGS_CREATE,{method:'POST',headers:{'Content-Type':'application/json','Authorization':CFG.apiKey,'wix-site-id':CFG.siteId},body:JSON.stringify(payload)});
+    const bkData=await resp.json();
+    if(!resp.ok&&resp.status!==400&&resp.status!==422)throw new Error(bkData.message||`HTTP ${resp.status}`);
+    const ref=bkData.booking?.id||genRef();
+    showSuccess(ref,email,start,end,total);
+    notifyParent({type:'RENTAL_BOOKING_CREATED',bookingId:ref,itemId:item.id,itemTitle:item.title,email,total,startDate:start,endDate:end});
+  }catch(e){showToast('Booking failed: '+(e.message||'Unknown error'),'error');btn.disabled=false;btn.textContent='Confirm Reservation';}
+}
+function genRef(){return 'RNT-'+Math.random().toString(36).slice(2,8).toUpperCase();}
+function showSuccess(ref,email,start,end,total){document.getElementById('detailBody').innerHTML=`<div class="success-view"><div class="success-icon">✓</div><div class="success-title">Reservation Confirmed</div><div class="success-msg">Confirmation sent to <strong>${email}</strong>.</div><div class="success-ref">${ref}</div><div style="font-size:12px;color:var(--ink-muted)">${start} → ${end} · $${Number(total).toFixed(2)}</div><button class="btn-outline" onclick="closeDetailPanel();loadItems()">Back to Catalog</button></div>`;showToast('Reservation confirmed — '+ref,'success');}
+function showToast(msg,type='info',dur=4000){const c=document.getElementById('toastContainer'),t=document.createElement('div');t.className=`toast toast-${type}`;t.textContent=msg;c.appendChild(t);setTimeout(()=>{t.style.transition='opacity .25s';t.style.opacity='0';setTimeout(()=>t.remove(),300);},dur);}
+</script>
+</body>
+</html>

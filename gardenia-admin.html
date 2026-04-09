@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gardenia — Rental Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f5f5;--card:#fff;--border:#e4e4e4;--border2:#c0c0c0;
+  --ink:#111;--mid:#444;--muted:#777;--dim:#bbb;
+  --green:#2e6e4a;--green-bg:#f0f7f4;
+  --red:#943030;--red-bg:#fdf2f2;
+  --amber:#8a6200;--amber-bg:#fdf8ee;
+  --blue:#1a4a8a;--blue-bg:#f0f4fc;
+  --r:4px;--fd:'Cormorant Garamond',serif;--fb:'Montserrat',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--fb);background:var(--bg);color:var(--ink);font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh}
+
+/* LAYOUT */
+.layout{display:flex;min-height:100vh}
+.sidebar{width:220px;background:var(--ink);flex-shrink:0;display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;overflow-y:auto;z-index:50}
+.content{margin-left:220px;flex:1;padding:24px;min-height:100vh}
+
+/* SIDEBAR */
+.sb-brand{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sb-brand-name{font-family:var(--fd);font-size:20px;font-style:italic;color:#fff}
+.sb-brand-sub{font-size:9px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-top:2px}
+.sb-section{padding:12px 0 4px;margin:0 12px;border-bottom:1px solid rgba(255,255,255,.07)}
+.sb-section-lbl{font-size:8px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.3);padding:0 6px;margin-bottom:4px}
+.sb-link{display:flex;align-items:center;gap:9px;padding:8px 18px;font-size:11px;font-weight:500;color:rgba(255,255,255,.65);cursor:pointer;transition:all .12s;text-decoration:none;border-radius:var(--r);margin:1px 6px}
+.sb-link:hover{background:rgba(255,255,255,.08);color:#fff}
+.sb-link.active{background:rgba(255,255,255,.12);color:#fff}
+.sb-link .ico{font-size:14px;width:18px;text-align:center}
+.sb-badge{margin-left:auto;background:rgba(255,255,255,.15);color:#fff;font-size:9px;font-weight:600;padding:2px 7px;border-radius:100px}
+.sb-badge.red{background:#943030}
+.sb-ext{display:flex;flex-direction:column;gap:2px;padding:12px 6px;margin-top:auto;border-top:1px solid rgba(255,255,255,.1)}
+.sb-ext a{display:flex;align-items:center;gap:8px;padding:7px 12px;font-size:10px;color:rgba(255,255,255,.5);text-decoration:none;border-radius:var(--r);transition:all .12s}
+.sb-ext a:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.8)}
+
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px}
+.page-title{font-family:var(--fd);font-size:26px;font-weight:400;color:var(--ink)}
+.page-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.topbar-right{display:flex;gap:9px;align-items:center}
+
+/* BUTTONS */
+.btn{padding:8px 16px;border-radius:var(--r);font-family:var(--fb);font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:all .12s;border:none;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--ink);color:#fff}
+.btn-primary:hover{opacity:.82}
+.btn-outline{background:transparent;color:var(--ink);border:1px solid var(--border2)}
+.btn-outline:hover{border-color:var(--ink)}
+.btn-green{background:var(--green);color:#fff}
+.btn-green:hover{opacity:.85}
+.btn-red{background:var(--red);color:#fff}
+.btn-red:hover{opacity:.85}
+.btn-sm{padding:5px 11px;font-size:10px}
+
+/* STAT CARDS */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px;margin-bottom:22px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px}
+.stat-card-lbl{font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.stat-card-val{font-family:var(--fd);font-size:30px;font-weight:400;color:var(--ink);line-height:1}
+.stat-card-sub{font-size:10px;color:var(--muted);margin-top:4px}
+.stat-card.green .stat-card-val{color:var(--green)}
+.stat-card.amber .stat-card-val{color:var(--amber)}
+.stat-card.red .stat-card-val{color:var(--red)}
+
+/* PANELS */
+.panel{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:18px}
+.panel-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.panel-title{font-size:13px;font-weight:600;color:var(--ink)}
+.panel-body{padding:18px}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);background:var(--bg);white-space:nowrap}
+.tbl td{padding:11px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:#fafafa}
+.tbl-name{font-weight:500;color:var(--ink)}
+.tbl-sub{font-size:10px;color:var(--muted);margin-top:1px}
+
+/* STATUS PILLS */
+.pill{display:inline-block;padding:3px 9px;border-radius:100px;font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+.pill-pending{background:var(--amber-bg);color:var(--amber)}
+.pill-confirmed{background:var(--green-bg);color:var(--green)}
+.pill-cancelled{background:#f3f3f3;color:var(--muted)}
+.pill-active{background:var(--blue-bg);color:var(--blue)}
+.pill-available{background:var(--green-bg);color:var(--green)}
+.pill-unavailable{background:#f3f3f3;color:var(--muted)}
+
+/* FORM MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-bg.on{opacity:1;pointer-events:all}
+.modal{background:var(--card);border-radius:var(--r);width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal-head{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-family:var(--fd);font-size:20px;color:var(--ink)}
+.modal-body{padding:22px}
+.modal-foot{padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:9px;justify-content:flex-end}
+.form-row{margin-bottom:13px}
+.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:13px}
+.lbl{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:5px;display:block}
+.inp,.sel,.ta{width:100%;background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:8px 11px;font-family:var(--fb);font-size:12px;color:var(--ink);outline:none;transition:border-color .12s}
+.inp:focus,.sel:focus,.ta:focus{border-color:var(--border2)}
+.inp::placeholder,.ta::placeholder{color:var(--dim)}
+.ta{resize:vertical;min-height:72px}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0}
+.toggle-lbl{font-size:12px;color:var(--ink)}
+.toggle{position:relative;width:40px;height:22px}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:var(--dim);border-radius:100px;cursor:pointer;transition:background .2s}
+.toggle-slider::before{content:'';position:absolute;width:16px;height:16px;background:#fff;border-radius:50%;top:3px;left:3px;transition:transform .2s}
+.toggle input:checked + .toggle-slider{background:var(--green)}
+.toggle input:checked + .toggle-slider::before{transform:translateX(18px)}
+
+/* EMPTY STATE */
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 20px;gap:8px;color:var(--muted);text-align:center}
+.empty-ico{font-size:28px}
+.empty-ttl{font-family:var(--fd);font-size:18px;font-style:italic;color:var(--ink)}
+.empty-msg{font-size:12px;max-width:240px}
+
+/* SPINNER */
+.spin{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--ink);border-radius:50%;animation:sp .7s linear infinite;margin:0 auto}
+@keyframes sp{to{transform:rotate(360deg)}}
+.loading{display:flex;align-items:center;justify-content:center;padding:40px;gap:10px;color:var(--muted);font-size:12px}
+
+/* FILTER ROW */
+.filter-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.filter-sel{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:6px 10px;font-family:var(--fb);font-size:11px;color:var(--ink);outline:none}
+.search-inp{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:6px 11px;font-family:var(--fb);font-size:11px;color:var(--ink);width:180px;outline:none}
+.search-inp::placeholder{color:var(--dim)}
+
+/* TOAST */
+.toasts{position:fixed;bottom:18px;right:18px;z-index:999;display:flex;flex-direction:column;gap:7px}
+.toast{padding:10px 16px;border-radius:var(--r);font-size:11px;font-weight:500;border:1px solid;white-space:nowrap;animation:ti .2s ease;box-shadow:0 4px 12px rgba(0,0,0,.1)}
+.t-ok{background:#fff;color:var(--green);border-color:var(--green)}
+.t-err{background:#fff;color:var(--red);border-color:var(--red)}
+.t-inf{background:var(--ink);color:#fff;border-color:var(--ink)}
+@keyframes ti{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* IMAGE PREVIEW */
+.img-preview{width:100%;height:120px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);object-fit:cover;display:none;margin-top:6px}
+.img-preview.show{display:block}
+
+@media(max-width:700px){
+  .sidebar{width:100%;height:auto;position:relative;flex-direction:row;flex-wrap:wrap}
+  .content{margin-left:0;padding:16px}
+  .stats-row{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-brand-name">Gardenia</div>
+    <div class="sb-brand-sub">Rental Admin</div>
+  </div>
+
+  <div style="padding:8px 0">
+    <div class="sb-section">
+      <div class="sb-section-lbl">Overview</div>
+      <div class="sb-link active" onclick="showPage('dashboard')"><span class="ico">📊</span> Dashboard</div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-lbl">Rentals</div>
+      <div class="sb-link" onclick="showPage('bookings')"><span class="ico">📋</span> Booking Requests <span class="sb-badge red" id="pendingBadge"></span></div>
+      <div class="sb-link" onclick="showPage('calendar')"><span class="ico">📅</span> Calendar</div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-lbl">Inventory</div>
+      <div class="sb-link" onclick="showPage('inventory')"><span class="ico">🗂️</span> All Items</div>
+      <div class="sb-link" onclick="openAddItem()"><span class="ico">➕</span> Add Item</div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-lbl">Wix Dashboard</div>
+    </div>
+  </div>
+
+  <div class="sb-ext">
+    <a href="https://manage.wix.com/dashboard/790788cd-d7a3-4a0f-8a8a-73630a12e2a0/cms/RentalCatalog" target="_blank"><span>🗃️</span> CMS — Catalog</a>
+    <a href="https://manage.wix.com/dashboard/790788cd-d7a3-4a0f-8a8a-73630a12e2a0/cms/RentalBookings" target="_blank"><span>📬</span> CMS — Bookings</a>
+    <a href="https://manage.wix.com/dashboard/790788cd-d7a3-4a0f-8a8a-73630a12e2a0/bookings-app" target="_blank"><span>📆</span> Wix Bookings</a>
+    <a href="https://manage.wix.com/dashboard/790788cd-d7a3-4a0f-8a8a-73630a12e2a0/inbox" target="_blank"><span>📩</span> Inbox</a>
+    <a href="https://www.gardeniaeventdecor.com" target="_blank"><span>🌐</span> View Live Site</a>
+  </div>
+</nav>
+
+<!-- CONTENT -->
+<main class="content">
+
+  <!-- ── DASHBOARD PAGE ── -->
+  <div id="page-dashboard">
+    <div class="topbar">
+      <div>
+        <div class="page-title">Dashboard</div>
+        <div class="page-sub" id="dash-date"></div>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-primary" onclick="openAddItem()">+ Add Rental Item</button>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card amber">
+        <div class="stat-card-lbl">Pending Requests</div>
+        <div class="stat-card-val" id="s-pending">—</div>
+        <div class="stat-card-sub">Awaiting response</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-card-lbl">Confirmed</div>
+        <div class="stat-card-val" id="s-confirmed">—</div>
+        <div class="stat-card-sub">This month</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-lbl">Total Items</div>
+        <div class="stat-card-val" id="s-items">—</div>
+        <div class="stat-card-sub">In catalog</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-card-lbl">Est. Revenue</div>
+        <div class="stat-card-val" id="s-revenue">—</div>
+        <div class="stat-card-sub">Confirmed bookings</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">Recent Booking Requests</div>
+        <button class="btn btn-outline btn-sm" onclick="showPage('bookings')">View All</button>
+      </div>
+      <div id="dash-bookings"><div class="loading"><div class="spin"></div> Loading…</div></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">Inventory Summary</div>
+        <button class="btn btn-outline btn-sm" onclick="showPage('inventory')">Manage</button>
+      </div>
+      <div id="dash-inventory"><div class="loading"><div class="spin"></div> Loading…</div></div>
+    </div>
+  </div>
+
+  <!-- ── BOOKINGS PAGE ── -->
+  <div id="page-bookings" style="display:none">
+    <div class="topbar">
+      <div>
+        <div class="page-title">Booking Requests</div>
+        <div class="page-sub">Manage all rental inquiries</div>
+      </div>
+      <div class="topbar-right">
+        <div class="filter-row">
+          <select class="filter-sel" id="booking-filter" onchange="filterBookings()">
+            <option value="all">All Status</option>
+            <option value="pending">Pending</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+          <input class="search-inp" type="text" id="booking-search" placeholder="Search name or item…" oninput="filterBookings()">
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div id="bookings-table"><div class="loading"><div class="spin"></div> Loading…</div></div>
+    </div>
+  </div>
+
+  <!-- ── CALENDAR PAGE ── -->
+  <div id="page-calendar" style="display:none">
+    <div class="topbar">
+      <div>
+        <div class="page-title">Rental Calendar</div>
+        <div class="page-sub">See all bookings by date</div>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-outline btn-sm" onclick="calNav(-1)">‹ Prev</button>
+        <span id="cal-head" style="font-size:13px;font-weight:600;min-width:130px;text-align:center"></span>
+        <button class="btn btn-outline btn-sm" onclick="calNav(1)">Next ›</button>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-body">
+        <div id="cal-grid"></div>
+        <div id="cal-legend" style="margin-top:16px;display:flex;gap:14px;flex-wrap:wrap;font-size:10px;color:var(--muted)"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── INVENTORY PAGE ── -->
+  <div id="page-inventory" style="display:none">
+    <div class="topbar">
+      <div>
+        <div class="page-title">Inventory</div>
+        <div class="page-sub">Manage your rental catalog</div>
+      </div>
+      <div class="topbar-right">
+        <div class="filter-row">
+          <select class="filter-sel" id="inv-filter" onchange="filterInventory()">
+            <option value="all">All Categories</option>
+          </select>
+          <input class="search-inp" type="text" id="inv-search" placeholder="Search items…" oninput="filterInventory()">
+        </div>
+        <button class="btn btn-primary" onclick="openAddItem()">+ Add Item</button>
+      </div>
+    </div>
+    <div class="panel">
+      <div id="inventory-table"><div class="loading"><div class="spin"></div> Loading…</div></div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<!-- ADD / EDIT ITEM MODAL -->
+<div class="modal-bg" id="itemModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="modal-title">Add Rental Item</div>
+      <button class="btn btn-outline btn-sm" onclick="closeModal()">✕ Close</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="item-id">
+      <div class="form-row">
+        <label class="lbl">Item Name *</label>
+        <input class="inp" id="item-title" type="text" placeholder="e.g. Gold Arch, Crystal Candelabra">
+      </div>
+      <div class="form-row-2">
+        <div>
+          <label class="lbl">Category *</label>
+          <input class="inp" id="item-category" type="text" placeholder="Arches, Lighting, Furniture…">
+        </div>
+        <div>
+          <label class="lbl">Quantity Available</label>
+          <input class="inp" id="item-quantity" type="number" placeholder="1" min="1">
+        </div>
+      </div>
+      <div class="form-row-2">
+        <div>
+          <label class="lbl">Price Per Day ($) *</label>
+          <input class="inp" id="item-price" type="number" placeholder="150" min="0">
+        </div>
+        <div>
+          <label class="lbl">Deposit Amount ($)</label>
+          <input class="inp" id="item-deposit" type="number" placeholder="50" min="0">
+        </div>
+      </div>
+      <div class="form-row-2">
+        <div>
+          <label class="lbl">Minimum Rental Days</label>
+          <input class="inp" id="item-mindays" type="number" placeholder="1" min="1">
+        </div>
+        <div>
+          <label class="lbl">Maximum Rental Days</label>
+          <input class="inp" id="item-maxdays" type="number" placeholder="7" min="1">
+        </div>
+      </div>
+      <div class="form-row">
+        <label class="lbl">Description</label>
+        <textarea class="ta" id="item-desc" placeholder="Describe the item, dimensions, style, what's included…"></textarea>
+      </div>
+      <div class="form-row">
+        <label class="lbl">Main Image URL</label>
+        <input class="inp" id="item-image" type="url" placeholder="https://…" oninput="previewImg(this.value)">
+        <img id="item-img-preview" class="img-preview" alt="Preview">
+      </div>
+      <div class="form-row">
+        <label class="lbl">Additional Images (comma-separated URLs)</label>
+        <textarea class="ta" id="item-images" placeholder="https://…, https://…" style="min-height:50px"></textarea>
+      </div>
+      <div class="form-row">
+        <label class="lbl">Internal Notes</label>
+        <input class="inp" id="item-notes" type="text" placeholder="Storage location, fragile items, setup notes…">
+      </div>
+      <div class="toggle-row">
+        <span class="toggle-lbl">Available for Rental</span>
+        <label class="toggle"><input type="checkbox" id="item-available" checked><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" id="save-btn" onclick="saveItem()">Save Item</button>
+    </div>
+  </div>
+</div>
+
+<!-- BOOKING DETAIL MODAL -->
+<div class="modal-bg" id="bookingModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Booking Request</div>
+      <button class="btn btn-outline btn-sm" onclick="closeBookingModal()">✕ Close</button>
+    </div>
+    <div class="modal-body" id="booking-detail-body"></div>
+    <div class="modal-foot" id="booking-detail-foot"></div>
+  </div>
+</div>
+
+<div class="toasts" id="toasts"></div>
+
+<script>
+const BASE = 'https://www.gardeniaeventdecor.com';
+const CATALOG_URL = BASE + '/_functions/rentalCatalog';
+const BOOKINGS_URL = BASE + '/_functions/adminBookings';
+const SAVE_URL     = BASE + '/_functions/adminSaveItem';
+const UPDATE_BOOKING_URL = BASE + '/_functions/adminUpdateBooking';
+
+let allItems=[], allBookings=[], currentPage='dashboard';
+let calYear, calMonth;
+
+const now = new Date();
+calYear = now.getFullYear();
+calMonth = now.getMonth();
+
+document.getElementById('dash-date').textContent = now.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+// ── NAVIGATION ────────────────────────────────────────
+function showPage(p){
+  currentPage=p;
+  document.querySelectorAll('[id^="page-"]').forEach(el=>el.style.display='none');
+  document.getElementById('page-'+p).style.display='block';
+  document.querySelectorAll('.sb-link').forEach(el=>el.classList.remove('active'));
+  event && event.currentTarget && event.currentTarget.classList.add('active');
+  if(p==='calendar') renderCalendar();
+}
+
+// ── LOAD ALL DATA ─────────────────────────────────────
+async function loadAll(){
+  await Promise.all([loadInventory(), loadBookings()]);
+  renderDashboard();
+}
+
+async function loadInventory(){
+  try{
+    const r=await fetch(CATALOG_URL);
+    const d=await r.json();
+    allItems = d.items||[];
+    renderInventoryTable();
+    buildCatFilter();
+  }catch(e){ console.error('Inventory load failed',e); }
+}
+
+async function loadBookings(){
+  try{
+    const r=await fetch(BOOKINGS_URL);
+    const d=await r.json();
+    allBookings = (d.items||[]).sort((a,b)=>new Date(b._createdDate)-new Date(a._createdDate));
+    renderBookingsTable();
+    updatePendingBadge();
+  }catch(e){
+    // Endpoint not yet deployed — show empty state gracefully
+    allBookings=[];
+    renderBookingsTable();
+  }
+}
+
+// ── DASHBOARD ─────────────────────────────────────────
+function renderDashboard(){
+  const pending   = allBookings.filter(b=>b.status==='pending').length;
+  const confirmed = allBookings.filter(b=>b.status==='confirmed').length;
+  const revenue   = allBookings.filter(b=>b.status==='confirmed').reduce((s,b)=>s+(b.total||0),0);
+  document.getElementById('s-pending').textContent   = pending;
+  document.getElementById('s-confirmed').textContent = confirmed;
+  document.getElementById('s-items').textContent     = allItems.length;
+  document.getElementById('s-revenue').textContent   = '$'+revenue.toFixed(0);
+
+  // Recent bookings
+  const recent = allBookings.slice(0,5);
+  document.getElementById('dash-bookings').innerHTML = recent.length
+    ? bookingsTableHtml(recent)
+    : emptyHtml('No booking requests yet','Requests will appear here when customers fill out the form');
+
+  // Inventory summary
+  const cats = [...new Set(allItems.map(i=>i.category).filter(Boolean))];
+  document.getElementById('dash-inventory').innerHTML = allItems.length
+    ? `<table class="tbl"><thead><tr><th>Item</th><th>Category</th><th>Rate</th><th>Qty</th><th>Status</th></tr></thead><tbody>`+
+      allItems.slice(0,8).map(item=>`<tr>
+        <td><div class="tbl-name">${item.title||'—'}</div></td>
+        <td>${item.category||'—'}</td>
+        <td>$${Number(item.pricePerDay||0).toFixed(0)}/day</td>
+        <td>${item.quantity||1}</td>
+        <td><span class="pill ${item.available!==false?'pill-available':'pill-unavailable'}">${item.available!==false?'Available':'Off'}</span></td>
+      </tr>`).join('')+`</tbody></table>`
+    : emptyHtml('No items in catalog','Click "Add Item" to add your first rental');
+}
+
+// ── BOOKINGS ──────────────────────────────────────────
+function renderBookingsTable(){
+  document.getElementById('bookings-table').innerHTML = allBookings.length
+    ? bookingsTableHtml(allBookings)
+    : emptyHtml('No booking requests yet','They will appear here when customers submit the rental form on your site');
+}
+
+function bookingsTableHtml(bks){
+  return `<div style="overflow-x:auto"><table class="tbl">
+    <thead><tr><th>Date</th><th>Customer</th><th>Item</th><th>Dates</th><th>Total</th><th>Status</th><th></th></tr></thead>
+    <tbody>${bks.map(b=>`<tr>
+      <td style="white-space:nowrap">${fmtDate(b._createdDate||b.submittedAt)}</td>
+      <td><div class="tbl-name">${b.firstName||''} ${b.lastName||''}</div><div class="tbl-sub">${b.email||''}</div></td>
+      <td><div class="tbl-name">${b.itemTitle||'—'}</div><div class="tbl-sub">Qty: ${b.quantity||1}</div></td>
+      <td style="white-space:nowrap"><div>${fmtDate(b.startDate)}</div><div style="font-size:10px;color:var(--muted)">→ ${fmtDate(b.endDate)}</div></td>
+      <td><strong>$${Number(b.total||0).toFixed(0)}</strong>${b.depositAmount?`<div class="tbl-sub">$${Number(b.depositAmount).toFixed(0)} dep</div>`:''}</td>
+      <td><span class="pill pill-${b.status||'pending'}">${b.status||'pending'}</span></td>
+      <td><button class="btn btn-outline btn-sm" onclick="openBooking('${b._id}')">View</button></td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+function filterBookings(){
+  const status=document.getElementById('booking-filter').value;
+  const q=document.getElementById('booking-search').value.toLowerCase();
+  const fil=allBookings.filter(b=>{
+    const statusOk=status==='all'||b.status===status;
+    const qOk=!q||[b.firstName,b.lastName,b.email,b.itemTitle].some(f=>f?.toLowerCase().includes(q));
+    return statusOk&&qOk;
+  });
+  document.getElementById('bookings-table').innerHTML=fil.length?bookingsTableHtml(fil):emptyHtml('No results','Try adjusting your filters');
+}
+
+function updatePendingBadge(){
+  const n=allBookings.filter(b=>b.status==='pending').length;
+  const el=document.getElementById('pendingBadge');
+  el.textContent=n||'';
+  el.style.display=n?'':'none';
+}
+
+function openBooking(id){
+  const b=allBookings.find(x=>x._id===id); if(!b)return;
+  document.getElementById('booking-detail-body').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+      <div><div class="lbl">Customer</div><div style="font-weight:500">${b.firstName} ${b.lastName}</div><div style="font-size:11px;color:var(--muted)">${b.email}</div>${b.phone?`<div style="font-size:11px;color:var(--muted)">${b.phone}</div>`:''}</div>
+      <div><div class="lbl">Status</div><span class="pill pill-${b.status||'pending'}">${b.status||'pending'}</span></div>
+      <div><div class="lbl">Item</div><div style="font-weight:500">${b.itemTitle||'—'}</div><div style="font-size:11px;color:var(--muted)">Qty: ${b.quantity||1}</div></div>
+      <div><div class="lbl">Rental Dates</div><div>${fmtDate(b.startDate)} → ${fmtDate(b.endDate)}</div><div style="font-size:11px;color:var(--muted)">${b.days||'?'} days</div></div>
+      <div><div class="lbl">Total</div><div style="font-family:var(--fd);font-size:22px">$${Number(b.total||0).toFixed(2)}</div></div>
+      <div><div class="lbl">Deposit</div><div>${b.depositAmount?'$'+Number(b.depositAmount).toFixed(2):'None'}</div></div>
+    </div>
+    ${b.notes?`<div class="form-row"><div class="lbl">Event Notes</div><div style="font-size:12px;color:var(--mid);background:var(--bg);padding:10px;border-radius:var(--r)">${b.notes}</div></div>`:''}
+    <div style="font-size:10px;color:var(--dim);margin-top:8px">Submitted: ${fmtDate(b.submittedAt||b._createdDate)} · Ref: ${b._id?.slice(0,8).toUpperCase()}</div>
+  `;
+  document.getElementById('booking-detail-foot').innerHTML=`
+    <button class="btn btn-outline" onclick="closeBookingModal()">Close</button>
+    ${b.status==='pending'?`
+      <button class="btn btn-red btn-sm" onclick="updateStatus('${b._id}','cancelled')">Decline</button>
+      <button class="btn btn-green btn-sm" onclick="updateStatus('${b._id}','confirmed')">✓ Confirm</button>
+    `:''}
+    ${b.status==='confirmed'?`<button class="btn btn-red btn-sm" onclick="updateStatus('${b._id}','cancelled')">Cancel</button>`:''}
+  `;
+  document.getElementById('bookingModal').classList.add('on');
+}
+
+function closeBookingModal(){ document.getElementById('bookingModal').classList.remove('on'); }
+
+async function updateStatus(id, status){
+  try{
+    const r=await fetch(UPDATE_BOOKING_URL,{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({id, status})
+    });
+    const d=await r.json();
+    if(d.error) throw new Error(d.error);
+    const b=allBookings.find(x=>x._id===id);
+    if(b) b.status=status;
+    closeBookingModal();
+    renderBookingsTable();
+    renderDashboard();
+    updatePendingBadge();
+    toast('Status updated to '+status,'ok');
+  }catch(e){
+    // Update locally even if endpoint not live yet
+    const b=allBookings.find(x=>x._id===id);
+    if(b){ b.status=status; closeBookingModal(); renderBookingsTable(); renderDashboard(); updatePendingBadge(); toast('Updated locally','ok'); }
+  }
+}
+
+// ── INVENTORY ─────────────────────────────────────────
+function buildCatFilter(){
+  const cats=[...new Set(allItems.map(i=>i.category).filter(Boolean))];
+  const sel=document.getElementById('inv-filter');
+  sel.innerHTML='<option value="all">All Categories</option>'+cats.map(c=>`<option value="${c}">${c}</option>`).join('');
+}
+
+function renderInventoryTable(){
+  document.getElementById('inventory-table').innerHTML = allItems.length
+    ? `<div style="overflow-x:auto"><table class="tbl">
+        <thead><tr><th>Item</th><th>Category</th><th>Rate/Day</th><th>Deposit</th><th>Min Days</th><th>Qty</th><th>Status</th><th></th></tr></thead>
+        <tbody>${allItems.map(item=>`<tr>
+          <td>
+            ${item.image?`<div style="display:flex;align-items:center;gap:10px"><img src="${item.image}" style="width:36px;height:36px;object-fit:cover;border-radius:var(--r);border:1px solid var(--border)" onerror="this.style.display='none'"><div class="tbl-name">${item.title||'—'}</div></div>`:`<div class="tbl-name">${item.title||'—'}</div>`}
+            ${item.notes?`<div class="tbl-sub">${item.notes}</div>`:''}
+          </td>
+          <td>${item.category||'—'}</td>
+          <td>$${Number(item.pricePerDay||0).toFixed(0)}</td>
+          <td>${item.depositAmount?'$'+Number(item.depositAmount).toFixed(0):'—'}</td>
+          <td>${item.minDays||1}</td>
+          <td>${item.quantity||1}</td>
+          <td><span class="pill ${item.available!==false?'pill-available':'pill-unavailable'}">${item.available!==false?'Available':'Off'}</span></td>
+          <td style="white-space:nowrap">
+            <button class="btn btn-outline btn-sm" onclick="editItem('${item._id}')">Edit</button>
+            <button class="btn btn-outline btn-sm" style="margin-left:4px" onclick="toggleAvail('${item._id}')">${item.available!==false?'Disable':'Enable'}</button>
+          </td>
+        </tr>`).join('')}</tbody>
+      </table></div>`
+    : emptyHtml('No items in catalog','Click "Add Item" to create your first rental item');
+}
+
+function filterInventory(){
+  const cat=document.getElementById('inv-filter').value;
+  const q=document.getElementById('inv-search').value.toLowerCase();
+  const fil=allItems.filter(i=>(cat==='all'||i.category===cat)&&(!q||[i.title,i.description,i.category].some(f=>f?.toLowerCase().includes(q))));
+  document.getElementById('inventory-table').innerHTML=fil.length
+    ?`<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Item</th><th>Category</th><th>Rate/Day</th><th>Status</th><th></th></tr></thead><tbody>${fil.map(item=>`<tr><td class="tbl-name">${item.title}</td><td>${item.category||'—'}</td><td>$${Number(item.pricePerDay||0).toFixed(0)}</td><td><span class="pill ${item.available!==false?'pill-available':'pill-unavailable'}">${item.available!==false?'Available':'Off'}</span></td><td><button class="btn btn-outline btn-sm" onclick="editItem('${item._id}')">Edit</button></td></tr>`).join('')}</tbody></table></div>`
+    :emptyHtml('No results','Try different filters');
+}
+
+// ── ITEM MODAL ────────────────────────────────────────
+function openAddItem(){
+  clearModal();
+  document.getElementById('modal-title').textContent='Add Rental Item';
+  document.getElementById('item-available').checked=true;
+  document.getElementById('itemModal').classList.add('on');
+}
+
+function editItem(id){
+  const item=allItems.find(i=>i._id===id); if(!item)return;
+  clearModal();
+  document.getElementById('modal-title').textContent='Edit: '+item.title;
+  document.getElementById('item-id').value=item._id||'';
+  document.getElementById('item-title').value=item.title||'';
+  document.getElementById('item-category').value=item.category||'';
+  document.getElementById('item-quantity').value=item.quantity||1;
+  document.getElementById('item-price').value=item.pricePerDay||'';
+  document.getElementById('item-deposit').value=item.depositAmount||'';
+  document.getElementById('item-mindays').value=item.minDays||1;
+  document.getElementById('item-maxdays').value=item.maxDays||'';
+  document.getElementById('item-desc').value=item.description||'';
+  document.getElementById('item-image').value=item.image||'';
+  document.getElementById('item-images').value=item.images||'';
+  document.getElementById('item-notes').value=item.notes||'';
+  document.getElementById('item-available').checked=item.available!==false;
+  if(item.image) previewImg(item.image);
+  document.getElementById('itemModal').classList.add('on');
+}
+
+function clearModal(){
+  ['item-id','item-title','item-category','item-quantity','item-price','item-deposit','item-mindays','item-maxdays','item-desc','item-image','item-images','item-notes'].forEach(id=>{
+    document.getElementById(id).value='';
+  });
+  document.getElementById('item-img-preview').classList.remove('show');
+}
+
+function closeModal(){ document.getElementById('itemModal').classList.remove('on'); }
+
+function previewImg(url){
+  const img=document.getElementById('item-img-preview');
+  if(url&&url.startsWith('http')){ img.src=url; img.classList.add('show'); }
+  else img.classList.remove('show');
+}
+
+async function saveItem(){
+  const title=document.getElementById('item-title').value.trim();
+  const price=document.getElementById('item-price').value;
+  if(!title){ toast('Item name is required','err'); return; }
+  if(!price){ toast('Price per day is required','err'); return; }
+
+  const btn=document.getElementById('save-btn');
+  btn.disabled=true; btn.textContent='Saving…';
+
+  const payload={
+    _id:            document.getElementById('item-id').value||undefined,
+    title,
+    category:       document.getElementById('item-category').value.trim(),
+    quantity:       Number(document.getElementById('item-quantity').value)||1,
+    pricePerDay:    Number(price),
+    depositAmount:  Number(document.getElementById('item-deposit').value)||0,
+    minDays:        Number(document.getElementById('item-mindays').value)||1,
+    maxDays:        Number(document.getElementById('item-maxdays').value)||undefined,
+    description:    document.getElementById('item-desc').value.trim(),
+    image:          document.getElementById('item-image').value.trim(),
+    images:         document.getElementById('item-images').value.trim(),
+    notes:          document.getElementById('item-notes').value.trim(),
+    available:      document.getElementById('item-available').checked,
+  };
+
+  try{
+    const r=await fetch(SAVE_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const d=await r.json();
+    if(d.error) throw new Error(d.error);
+    toast(payload._id?'Item updated!':'Item added! Booking service being created…','ok');
+    closeModal();
+    await loadInventory();
+    renderDashboard();
+  }catch(e){
+    toast('Save failed: '+e.message,'err');
+  }finally{
+    btn.disabled=false; btn.textContent='Save Item';
+  }
+}
+
+async function toggleAvail(id){
+  const item=allItems.find(i=>i._id===id); if(!item)return;
+  item.available=!(item.available!==false);
+  try{
+    const r=await fetch(SAVE_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...item,_id:id})});
+    const d=await r.json();
+    if(d.error) throw new Error(d.error);
+    toast(item.available?'Item enabled':'Item disabled','ok');
+    renderInventoryTable();
+    renderDashboard();
+  }catch(e){ toast('Update failed: '+e.message,'err'); }
+}
+
+// ── CALENDAR ──────────────────────────────────────────
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+function calNav(d){ calMonth+=d; if(calMonth<0){calMonth=11;calYear--;} if(calMonth>11){calMonth=0;calYear++;} renderCalendar(); }
+
+function renderCalendar(){
+  document.getElementById('cal-head').textContent=MONTHS[calMonth]+' '+calYear;
+  const firstDay=new Date(calYear,calMonth,1).getDay();
+  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+  const today=new Date(); today.setHours(0,0,0,0);
+
+  // Map bookings to dates
+  const bookingMap={};
+  allBookings.filter(b=>b.status!=='cancelled').forEach(b=>{
+    if(!b.startDate||!b.endDate)return;
+    const s=new Date(b.startDate),e=new Date(b.endDate);
+    for(let d=new Date(s);d<=e;d.setDate(d.getDate()+1)){
+      const key=d.toISOString().split('T')[0];
+      if(!bookingMap[key]) bookingMap[key]=[];
+      bookingMap[key].push(b);
+    }
+  });
+
+  let html=`<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">`;
+  DAYS.forEach(d=>{ html+=`<div style="font-size:9px;font-weight:600;text-align:center;color:var(--muted);padding:4px 0;text-transform:uppercase;letter-spacing:.06em">${d}</div>`; });
+  for(let i=0;i<firstDay;i++) html+=`<div></div>`;
+  for(let d=1;d<=daysInMonth;d++){
+    const date=new Date(calYear,calMonth,d);
+    const key=date.toISOString().split('T')[0];
+    const bks=bookingMap[key]||[];
+    const isToday=date.toDateString()===today.toDateString();
+    const isPast=date<today;
+    html+=`<div style="border:1px solid ${isToday?'var(--ink)':bks.length?'var(--green)':'var(--border)'};border-radius:var(--r);padding:6px;min-height:64px;background:${bks.length?'var(--green-bg)':isPast?'#fafafa':'#fff'}">
+      <div style="font-size:11px;font-weight:${isToday?'700':'400'};margin-bottom:4px;color:${isToday?'var(--ink)':'var(--mid)'}">${d}</div>
+      ${bks.map(b=>`<div style="font-size:9px;background:var(--green);color:#fff;border-radius:2px;padding:1px 4px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${b.itemTitle||'Rental'}</div>`).join('')}
+    </div>`;
+  }
+  html+=`</div>`;
+  document.getElementById('cal-grid').innerHTML=html;
+  document.getElementById('cal-legend').innerHTML=`
+    <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;background:var(--green-bg);border:1px solid var(--green);border-radius:2px"></span>Has bookings</span>
+    <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;background:#fff;border:1px solid var(--ink);border-radius:2px"></span>Today</span>
+  `;
+}
+
+// ── HELPERS ───────────────────────────────────────────
+function fmtDate(d){ if(!d)return '—'; try{ return new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }catch(e){return '—';} }
+function emptyHtml(ttl,msg){ return `<div class="empty"><div class="empty-ico">🌸</div><div class="empty-ttl">${ttl}</div><div class="empty-msg">${msg}</div></div>`; }
+function toast(msg,type='inf',dur=3500){
+  const c=document.getElementById('toasts'),t=document.createElement('div');
+  t.className='toast t-'+(type==='ok'?'ok':type==='err'?'err':'inf');
+  t.textContent=msg;c.appendChild(t);
+  setTimeout(()=>{t.style.transition='opacity .25s';t.style.opacity='0';setTimeout(()=>t.remove(),300);},dur);
+}
+
+// Close modals on background click
+document.getElementById('itemModal').addEventListener('click',function(e){if(e.target===this)closeModal();});
+document.getElementById('bookingModal').addEventListener('click',function(e){if(e.target===this)closeBookingModal();});
+
+// ── START ─────────────────────────────────────────────
+loadAll();
+</script>
+</body>
+</html>

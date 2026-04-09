@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gardenia Event Decor — Item Rentals</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:          #ffffff;
+  --surface:     #f9f9f9;
+  --surface2:    #f3f3f3;
+  --border:      #e8e8e8;
+  --border-dark: #c8c8c8;
+  --ink:         #1a1a1a;
+  --ink-mid:     #3a3a3a;
+  --ink-muted:   #7a7a7a;
+  --ink-dim:     #b8b8b8;
+  --green:       #2e6e4a;
+  --red:         #943030;
+  --radius:      2px;
+  --font-display: 'Cormorant Garamond', serif;
+  --font-body:    'Montserrat', sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--font-body);background:var(--bg);color:var(--ink);font-size:13px;line-height:1.6;-webkit-font-smoothing:antialiased;}
+
+/* HEADER */
+.header{padding:28px 36px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;}
+.header-logo img{height:52px;object-fit:contain;display:block;}
+.header-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;}
+.header-tagline{font-family:var(--font-display);font-size:15px;font-style:italic;font-weight:300;color:var(--ink-muted);letter-spacing:0.02em;}
+#connectionStatus{font-size:10px;letter-spacing:0.08em;color:var(--ink-dim);text-transform:uppercase;}
+
+/* SECTION LABEL */
+.section-header{padding:16px 36px 12px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.section-title{font-family:var(--font-display);font-size:22px;font-weight:400;color:var(--ink);letter-spacing:0.01em;}
+.section-count{font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-muted);}
+
+/* FILTER BAR */
+.filter-bar{padding:11px 36px;border-bottom:1px solid var(--border);display:flex;gap:6px;align-items:center;flex-wrap:wrap;background:var(--bg);}
+.filter-label{font-size:9px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-dim);margin-right:4px;}
+.filter-chip{padding:4px 14px;border:1px solid var(--border-dark);border-radius:100px;font-size:10px;font-family:var(--font-body);font-weight:500;letter-spacing:0.06em;color:var(--ink-muted);background:transparent;cursor:pointer;transition:all 0.12s;text-transform:uppercase;}
+.filter-chip:hover{border-color:var(--ink);color:var(--ink);}
+.filter-chip.active{border-color:var(--ink);background:var(--ink);color:#fff;}
+.search-wrap{margin-left:auto;position:relative;}
+.search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--ink-dim);}
+.search-input{background:var(--surface);border:1px solid var(--border);border-radius:100px;padding:6px 14px 6px 32px;font-family:var(--font-body);font-size:11px;color:var(--ink);width:200px;outline:none;transition:border-color .12s;}
+.search-input::placeholder{color:var(--ink-dim);}
+.search-input:focus{border-color:var(--border-dark);}
+
+/* GRID */
+.main{padding:24px 36px;}
+.catalog-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:24px;}
+
+.item-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:border-color .18s,box-shadow .18s;position:relative;display:flex;flex-direction:column;}
+.item-card:hover{border-color:var(--border-dark);box-shadow:0 4px 24px rgba(0,0,0,0.08);}
+
+.item-img-wrap{position:relative;overflow:hidden;}
+.item-img{width:100%;aspect-ratio:4/3;object-fit:cover;background:var(--surface2);display:block;transition:transform .35s ease;}
+.item-card:hover .item-img{transform:scale(1.03);}
+.item-img-placeholder{width:100%;aspect-ratio:4/3;background:var(--surface2);display:flex;align-items:center;justify-content:center;color:var(--ink-dim);font-size:36px;}
+
+.item-badge{position:absolute;top:10px;right:10px;padding:3px 10px;border-radius:100px;font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;}
+.badge-available{background:rgba(255,255,255,0.92);color:var(--green);border:1px solid rgba(46,110,74,0.25);}
+.badge-unavailable{background:rgba(255,255,255,0.92);color:var(--ink-dim);border:1px solid var(--border);}
+
+.item-body{padding:16px 18px 18px;flex:1;display:flex;flex-direction:column;}
+.item-category{font-size:9px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:5px;}
+.item-name{font-family:var(--font-display);font-size:19px;font-weight:400;color:var(--ink);line-height:1.25;margin-bottom:6px;}
+.item-desc{font-size:11px;color:var(--ink-muted);line-height:1.6;margin-bottom:14px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;flex:1;}
+.item-footer{display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border);padding-top:12px;margin-top:auto;}
+.item-price{font-family:var(--font-display);font-size:21px;font-weight:400;color:var(--ink);}
+.item-price-unit{font-size:10px;color:var(--ink-muted);font-family:var(--font-body);font-weight:400;margin-left:2px;}
+.item-qty{font-size:10px;color:var(--ink-muted);}
+.item-view-btn{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink);border-bottom:1px solid var(--ink);padding-bottom:1px;opacity:0;transition:opacity .18s;}
+.item-card:hover .item-view-btn{opacity:1;}
+
+/* DETAIL PANEL */
+.detail-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:100;display:flex;align-items:flex-start;justify-content:flex-end;opacity:0;pointer-events:none;transition:opacity .2s;}
+.detail-overlay.open{opacity:1;pointer-events:all;}
+.detail-panel{width:440px;max-width:96vw;height:100%;overflow-y:auto;background:var(--bg);border-left:1px solid var(--border);transform:translateX(100%);transition:transform .26s cubic-bezier(0.4,0,0.2,1);display:flex;flex-direction:column;}
+.detail-overlay.open .detail-panel{transform:translateX(0);}
+
+.detail-top{position:sticky;top:0;z-index:10;padding:14px 22px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.detail-top-brand{font-family:var(--font-display);font-size:13px;font-style:italic;font-weight:300;color:var(--ink-muted);}
+.btn-close{background:none;border:1px solid var(--border);width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;color:var(--ink-muted);transition:all .12s;}
+.btn-close:hover{border-color:var(--ink);color:var(--ink);}
+
+.detail-img{width:100%;aspect-ratio:3/2;object-fit:cover;background:var(--surface2);display:block;}
+.detail-img-placeholder{width:100%;aspect-ratio:3/2;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:56px;color:var(--ink-dim);}
+
+.detail-content{padding:22px 24px 32px;}
+.detail-category{font-size:9px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:8px;}
+.detail-name{font-family:var(--font-display);font-size:32px;font-weight:400;color:var(--ink);line-height:1.15;margin-bottom:10px;}
+.detail-desc{font-size:12px;color:var(--ink-mid);line-height:1.75;margin-bottom:22px;}
+
+.detail-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:24px;}
+.stat-box{background:var(--surface);padding:12px 14px;text-align:center;}
+.stat-label{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-dim);margin-bottom:4px;}
+.stat-val{font-family:var(--font-display);font-size:20px;font-weight:400;color:var(--ink);}
+.stat-sub{font-size:10px;color:var(--ink-muted);margin-top:1px;}
+
+/* BOOKING FORM */
+.booking-section{border-top:1px solid var(--border);padding-top:20px;}
+.booking-title{font-family:var(--font-display);font-size:21px;font-weight:400;color:var(--ink);margin-bottom:16px;font-style:italic;}
+.form-row{margin-bottom:13px;}
+.form-label{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--ink-muted);margin-bottom:5px;display:block;}
+.form-input,.form-textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;font-family:var(--font-body);font-size:12px;color:var(--ink);outline:none;transition:border-color .12s;}
+.form-input:focus,.form-textarea:focus{border-color:var(--ink-mid);}
+.form-input::placeholder,.form-textarea::placeholder{color:var(--ink-dim);}
+.form-textarea{resize:vertical;min-height:68px;}
+.form-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+.qty-row{display:flex;align-items:center;gap:12px;}
+.qty-ctrl{display:flex;align-items:center;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.qty-btn{background:var(--surface2);border:none;color:var(--ink-muted);width:32px;height:32px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s;}
+.qty-btn:hover{background:var(--border-dark);color:var(--ink);}
+.qty-val{padding:0 14px;font-family:var(--font-display);font-size:17px;color:var(--ink);min-width:40px;text-align:center;background:var(--bg);height:32px;display:flex;align-items:center;justify-content:center;border-left:1px solid var(--border);border-right:1px solid var(--border);}
+.qty-max{font-size:10px;color:var(--ink-dim);}
+
+.price-box{background:var(--surface);border:1px solid var(--border);padding:14px;margin-bottom:14px;}
+.price-line{display:flex;justify-content:space-between;font-size:11px;color:var(--ink-muted);margin-bottom:5px;}
+.price-line.total{border-top:1px solid var(--border);padding-top:10px;margin-top:8px;margin-bottom:0;font-size:12px;font-weight:500;color:var(--ink);}
+.price-line.total .amt{font-family:var(--font-display);font-size:21px;}
+
+.btn-book{width:100%;padding:13px;background:var(--ink);color:#fff;border:none;border-radius:var(--radius);font-family:var(--font-body);font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:opacity .12s;}
+.btn-book:hover{opacity:.82;}
+.btn-book:disabled{opacity:.38;cursor:not-allowed;}
+.form-footnote{font-size:10px;color:var(--ink-dim);text-align:center;margin-top:10px;font-style:italic;}
+
+.btn-outline{padding:10px 22px;background:transparent;border:1px solid var(--ink);border-radius:var(--radius);color:var(--ink);font-family:var(--font-body);font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .12s;margin-top:6px;}
+.btn-outline:hover{background:var(--ink);color:#fff;}
+
+/* STATES */
+.state-box{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:64px 24px;gap:10px;color:var(--ink-muted);text-align:center;}
+.state-icon{font-size:34px;}
+.state-title{font-family:var(--font-display);font-size:22px;font-style:italic;color:var(--ink);}
+.state-msg{font-size:12px;max-width:280px;line-height:1.6;}
+.spinner{width:26px;height:26px;border:2px solid var(--border);border-top-color:var(--ink);border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* SUCCESS */
+.success-view{display:flex;flex-direction:column;align-items:center;padding:40px 28px;text-align:center;gap:10px;}
+.success-flourish{font-size:40px;}
+.success-title{font-family:var(--font-display);font-size:30px;font-style:italic;color:var(--ink);}
+.success-msg{font-size:12px;color:var(--ink-muted);max-width:260px;line-height:1.65;}
+.success-ref{font-size:12px;font-weight:600;letter-spacing:.1em;color:var(--ink);border:1px solid var(--border);padding:6px 18px;}
+.success-dates{font-size:11px;color:var(--ink-muted);}
+
+/* TOAST */
+.toast-wrap{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:999;display:flex;flex-direction:column;gap:8px;pointer-events:none;}
+.toast{padding:10px 18px;border-radius:var(--radius);font-size:11px;font-weight:500;border:1px solid;pointer-events:all;white-space:nowrap;animation:toastIn .2s ease;}
+.toast-ok{background:var(--bg);color:var(--green);border-color:var(--green);}
+.toast-err{background:var(--bg);color:var(--red);border-color:var(--red);}
+.toast-info{background:var(--ink);color:#fff;border-color:var(--ink);}
+@keyframes toastIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* CONFIG */
+.cfg-overlay{position:fixed;inset:0;background:var(--bg);z-index:200;display:flex;align-items:center;justify-content:center;padding:24px;}
+.cfg-box{background:var(--bg);border:1px solid var(--border);padding:36px;width:100%;max-width:440px;box-shadow:0 12px 48px rgba(0,0,0,0.1);}
+.cfg-logo{height:44px;object-fit:contain;display:block;margin:0 auto 20px;}
+.cfg-title{font-family:var(--font-display);font-size:24px;font-style:italic;color:var(--ink);text-align:center;margin-bottom:4px;}
+.cfg-sub{font-size:12px;color:var(--ink-muted);text-align:center;margin-bottom:22px;}
+.cfg-note{margin-top:14px;padding:12px;background:var(--surface2);font-size:10px;color:var(--ink-muted);line-height:1.65;}
+.cfg-note code{background:var(--border);padding:1px 4px;font-size:9px;}
+
+/* DIVIDER */
+.divider{border:none;border-top:1px solid var(--border);margin:20px 0;}
+
+/* RESPONSIVE */
+@media(max-width:560px){
+  .header,.section-header,.filter-bar,.main{padding-left:18px;padding-right:18px;}
+  .detail-panel{width:100vw;border-left:none;}
+  .catalog-grid{grid-template-columns:1fr 1fr;gap:14px;}
+  .search-input{width:100%}.search-wrap{margin-left:0;width:100%;}
+}
+@media(max-width:380px){.catalog-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<!-- CONFIG OVERLAY -->
+<div class="cfg-overlay" id="cfgOverlay" style="display:none">
+  <div class="cfg-box">
+    <img class="cfg-logo" src="https://static.wixstatic.com/media/ee1cab_28aac110e3d641c392289e6f778b59fd~mv2.png/v1/crop/x_0,y_123,w_500,h_254/fill/w_291,h_148,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/Gardenia%20(2).png" alt="Gardenia Event Decor">
+    <div class="cfg-title">Rental System Setup</div>
+    <div class="cfg-sub">Connect to your Wix site to load your rental inventory.</div>
+    <div class="form-row"><label class="form-label">Wix API Key</label><input class="form-input" id="cfg-key" placeholder="IST.eyJ…"></div>
+    <div class="form-row"><label class="form-label">CMS Collection ID</label><input class="form-input" id="cfg-col" placeholder="RentalItems" value="RentalItems"></div>
+    <button class="btn-book" onclick="applyConfig()">Connect</button>
+    <div class="cfg-note">
+      Your Site ID is pre-configured: <code>790788cd-d7a3-4a0f-8a8a-73630a12e2a0</code><br><br>
+      When embedding via iframe, pass your API key as a URL param:<br>
+      <code>?apiKey=IST.xxx&collection=RentalItems</code>
+    </div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-logo">
+    <img src="https://static.wixstatic.com/media/ee1cab_28aac110e3d641c392289e6f778b59fd~mv2.png/v1/crop/x_0,y_123,w_500,h_254/fill/w_291,h_148,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/Gardenia%20(2).png" alt="Gardenia Event Decor">
+  </div>
+  <div class="header-right">
+    <div class="header-tagline">Event Rentals — Dallas, Texas</div>
+    <div id="connectionStatus"></div>
+  </div>
+</header>
+
+<!-- SECTION HEADER -->
+<div class="section-header">
+  <div class="section-title">Browse Our Rental Collection</div>
+  <div class="section-count" id="catalogCount"></div>
+</div>
+
+<!-- FILTER BAR -->
+<div class="filter-bar">
+  <span class="filter-label">Category:</span>
+  <button class="filter-chip active" onclick="filterCat('all',this)">All</button>
+  <div id="catFilters" style="display:contents"></div>
+  <div class="search-wrap">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input class="search-input" type="text" id="searchInput" placeholder="Search rentals…" oninput="handleSearch(this.value)">
+  </div>
+</div>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="state-box" id="stateLoading"><div class="spinner"></div><div class="state-title">Loading Collection</div><div class="state-msg">Connecting to your Gardenia inventory…</div></div>
+  <div class="catalog-grid" id="grid" style="display:none"></div>
+  <div class="state-box" id="stateEmpty" style="display:none"><div class="state-icon">🌸</div><div class="state-title">No Items Found</div><div class="state-msg">Try adjusting your search or filters. Add items in your Wix CMS.</div></div>
+  <div class="state-box" id="stateError" style="display:none"><div class="state-icon">⚠</div><div class="state-title">Connection Error</div><div class="state-msg" id="errMsg">Could not reach your Wix collection. Check your API Key.</div><button class="btn-outline" onclick="loadItems()" style="margin-top:8px">Retry</button></div>
+</main>
+
+<!-- DETAIL PANEL -->
+<div class="detail-overlay" id="overlay" onclick="closeOverlay(event)">
+  <div class="detail-panel">
+    <div class="detail-top">
+      <span class="detail-top-brand">Gardenia Event Decor</span>
+      <button class="btn-close" onclick="closePanel()">✕</button>
+    </div>
+    <div id="detailBody"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast-wrap" id="toasts"></div>
+
+<script>
+// ── CONFIG ──────────────────────────────────────────────
+const SITE_ID = '790788cd-d7a3-4a0f-8a8a-73630a12e2a0'; // Gardenia's site ID — hardcoded
+const DATA_API = 'https://www.wixapis.com/wix-data/v2/items/query';
+const BOOK_API = 'https://www.wixapis.com/bookings/v2/bookings';
+
+let CFG = { apiKey: '', collection: 'RentalItems' };
+let allItems = [], filtered = [], activeCat = 'all', currentItem = null, qty = 1;
+
+// ── INIT ─────────────────────────────────────────────
+(function(){
+  const p = new URLSearchParams(window.location.search);
+  CFG.apiKey     = p.get('apiKey')     || '';
+  CFG.collection = p.get('collection') || 'RentalItems';
+
+  window.addEventListener('message', e => {
+    if (!e.data) return;
+    if (e.data.type === 'RENTAL_CONFIG') {
+      if (e.data.apiKey)     CFG.apiKey     = e.data.apiKey;
+      if (e.data.collection) CFG.collection = e.data.collection;
+      loadItems();
+    }
+    if (e.data.type === 'RENTAL_FILTER') {
+      if (e.data.category) filterCat(e.data.category, null);
+      if (e.data.search !== undefined) handleSearch(e.data.search);
+    }
+  });
+
+  if (!CFG.apiKey) {
+    document.getElementById('cfgOverlay').style.display = 'flex';
+    setStatus('Not connected');
+    return;
+  }
+  loadItems();
+  toParent({ type: 'RENTAL_READY' });
+})();
+
+function toParent(d){ try{ window.parent.postMessage(d,'*'); }catch(e){} }
+function resize(){ toParent({ type:'RENTAL_HEIGHT', height: document.body.scrollHeight }); }
+function setStatus(m,c){ const el=document.getElementById('connectionStatus'); el.textContent=m; el.style.color=c||'#b8b8b8'; }
+
+function applyConfig(){
+  CFG.apiKey     = document.getElementById('cfg-key').value.trim();
+  CFG.collection = document.getElementById('cfg-col').value.trim() || 'RentalItems';
+  if (!CFG.apiKey){ toast('Please enter your API Key','err'); return; }
+  document.getElementById('cfgOverlay').style.display = 'none';
+  loadItems();
+}
+
+// ── LOAD ─────────────────────────────────────────────
+async function loadItems(){
+  show('loading'); setStatus('Connecting…');
+  try{
+    const r = await fetch(DATA_API,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':CFG.apiKey,'wix-site-id':SITE_ID},
+      body:JSON.stringify({ dataCollectionId:CFG.collection, query:{ paging:{limit:100}, sort:[{fieldName:'title',order:'ASC'}] } })
+    });
+    if(!r.ok){ const e=await r.json().catch(()=>({})); throw new Error(e.message||`HTTP ${r.status}`); }
+    const data = await r.json();
+    allItems = (data.dataItems||[]).map(di=>({id:di.id,...di.data}));
+    if(!allItems.length){ show('empty'); setStatus('Connected — 0 items'); return; }
+    buildCats(); applyFilters(); show('grid');
+    setStatus(`${allItems.length} items`);
+    document.getElementById('catalogCount').textContent = `${allItems.length} items`;
+    toParent({type:'RENTAL_ITEMS_LOADED',count:allItems.length});
+    setTimeout(resize,100);
+  }catch(e){
+    document.getElementById('errMsg').textContent = e.message||'Connection failed.';
+    show('error'); setStatus('Error','#943030');
+  }
+}
+
+function show(s){
+  document.getElementById('stateLoading').style.display = s==='loading'?'flex':'none';
+  document.getElementById('grid').style.display         = s==='grid'   ?'grid':'none';
+  document.getElementById('stateEmpty').style.display   = s==='empty'  ?'flex':'none';
+  document.getElementById('stateError').style.display   = s==='error'  ?'flex':'none';
+}
+
+// ── FILTERS ──────────────────────────────────────────
+function buildCats(){
+  const cats=[...new Set(allItems.map(i=>i.category).filter(Boolean))];
+  document.getElementById('catFilters').innerHTML=cats.map(c=>`<button class="filter-chip" onclick="filterCat('${c}',this)">${c}</button>`).join('');
+}
+function filterCat(cat,btn){
+  activeCat=cat;
+  document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  applyFilters();
+}
+function handleSearch(q){ applyFilters(q); }
+function applyFilters(override){
+  const q=(override!==undefined?override:document.getElementById('searchInput').value).toLowerCase();
+  filtered=allItems.filter(i=>{
+    const catOk=activeCat==='all'||i.category===activeCat;
+    const srOk=!q||[i.title,i.description,i.category].some(f=>f?.toLowerCase().includes(q));
+    return catOk&&srOk;
+  });
+  filtered.length?( renderGrid(), show('grid') ):show('empty');
+  setTimeout(resize,50);
+}
+
+// ── RENDER ────────────────────────────────────────────
+function renderGrid(){
+  document.getElementById('grid').innerHTML=filtered.map(item=>{
+    const avail=item.available!==false;
+    const img=item.image?.url||item.mainMedia?.url||item.thumbnail||'';
+    const price=item.pricePerDay||item.price||0;
+    return `<div class="item-card" onclick="openItem('${item.id}')">
+      <div class="item-img-wrap">
+        ${img?`<img class="item-img" src="${img}" alt="${item.title||''}" loading="lazy" onerror="this.parentNode.innerHTML='<div class=\'item-img-placeholder\'>🌸</div>'">`:`<div class="item-img-placeholder">🌸</div>`}
+        <span class="item-badge ${avail?'badge-available':'badge-unavailable'}">${avail?'Available':'Unavailable'}</span>
+      </div>
+      <div class="item-body">
+        ${item.category?`<div class="item-category">${item.category}</div>`:''}
+        <div class="item-name">${item.title||'Untitled'}</div>
+        <div class="item-desc">${item.description||''}</div>
+        <div class="item-footer">
+          <div><span class="item-price">$${Number(price).toFixed(0)}</span><span class="item-price-unit">/ day</span></div>
+          <span class="item-view-btn">View →</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── DETAIL ────────────────────────────────────────────
+function openItem(id){
+  currentItem=allItems.find(i=>i.id===id); if(!currentItem) return;
+  qty=1; renderDetail();
+  document.getElementById('overlay').classList.add('open');
+  toParent({type:'RENTAL_ITEM_SELECTED',itemId:id,itemTitle:currentItem.title});
+}
+function closePanel(){ document.getElementById('overlay').classList.remove('open'); currentItem=null; }
+function closeOverlay(e){ if(e.target===document.getElementById('overlay')) closePanel(); }
+
+function renderDetail(){
+  const item=currentItem, avail=item.available!==false, price=Number(item.pricePerDay||item.price||0);
+  const img=item.image?.url||item.mainMedia?.url||item.thumbnail||'';
+  const today=new Date().toISOString().split('T')[0];
+  const tmrw=new Date(Date.now()+86400000).toISOString().split('T')[0];
+
+  document.getElementById('detailBody').innerHTML=`
+    ${img?`<img class="detail-img" src="${img}" alt="${item.title||''}">`:`<div class="detail-img-placeholder">🌸</div>`}
+    <div class="detail-content">
+      ${item.category?`<div class="detail-category">${item.category}</div>`:''}
+      <div class="detail-name">${item.title||'Item'}</div>
+      <div class="detail-desc">${item.description||''}</div>
+      <div class="detail-stats">
+        <div class="stat-box"><div class="stat-label">Rate</div><div class="stat-val">$${price.toFixed(0)}</div><div class="stat-sub">per day</div></div>
+        <div class="stat-box"><div class="stat-label">Status</div><div class="stat-val" style="font-size:14px;color:${avail?'var(--green)':'var(--ink-dim)'}">${avail?'Available':'Unavailable'}</div>${item.quantity!=null?`<div class="stat-sub">${item.quantity} in stock</div>`:''}</div>
+        <div class="stat-box"><div class="stat-label">Location</div><div class="stat-val" style="font-size:13px">Dallas</div><div class="stat-sub">TX</div></div>
+      </div>
+      ${avail?`
+      <div class="booking-section">
+        <div class="booking-title">Reserve This Item</div>
+        <div class="form-2">
+          <div class="form-row" style="margin-bottom:0"><label class="form-label">Event Start</label><input class="form-input" type="date" id="d-start" value="${today}" min="${today}" onchange="calcPrice()"></div>
+          <div class="form-row" style="margin-bottom:0"><label class="form-label">Event End</label><input class="form-input" type="date" id="d-end" value="${tmrw}" min="${today}" onchange="calcPrice()"></div>
+        </div>
+        <div class="form-row" style="margin-top:13px">
+          <label class="form-label">Quantity</label>
+          <div class="qty-row">
+            <div class="qty-ctrl">
+              <button class="qty-btn" onclick="chQty(-1)">−</button>
+              <div class="qty-val" id="qtyVal">1</div>
+              <button class="qty-btn" onclick="chQty(1)">+</button>
+            </div>
+            ${item.quantity!=null?`<span class="qty-max">${item.quantity} max available</span>`:''}
+          </div>
+        </div>
+        <hr class="divider">
+        <div class="form-2">
+          <div class="form-row" style="margin-bottom:0"><label class="form-label">First Name</label><input class="form-input" type="text" id="d-first" placeholder="Jane"></div>
+          <div class="form-row" style="margin-bottom:0"><label class="form-label">Last Name</label><input class="form-input" type="text" id="d-last" placeholder="Smith"></div>
+        </div>
+        <div class="form-row" style="margin-top:13px"><label class="form-label">Email</label><input class="form-input" type="email" id="d-email" placeholder="you@example.com"></div>
+        <div class="form-row"><label class="form-label">Phone</label><input class="form-input" type="tel" id="d-phone" placeholder="+1 (214) 000-0000"></div>
+        <div class="form-row"><label class="form-label">Event Type & Notes <span style="text-transform:none;font-weight:400;color:var(--ink-dim);font-size:9px">(optional)</span></label><textarea class="form-textarea" id="d-notes" placeholder="Wedding, quinceañera, corporate event — venue, theme, any special notes…"></textarea></div>
+        <div class="price-box">
+          <div class="price-line"><span>Daily Rate</span><span>$${price.toFixed(2)}</span></div>
+          <div class="price-line" id="ps-days"><span>Duration</span><span>1 day</span></div>
+          <div class="price-line" id="ps-qty"><span>Quantity</span><span>× 1</span></div>
+          <div class="price-line total"><span>Estimated Total</span><span class="amt" id="ps-total">$${price.toFixed(2)}</span></div>
+        </div>
+        <button class="btn-book" id="bookBtn" onclick="submitBooking()">Request Reservation</button>
+        <p class="form-footnote">Gardenia will confirm availability and send you a quote within 24 hours.</p>
+      </div>`:`<div style="text-align:center;padding:20px 0;color:var(--ink-muted);font-size:12px;font-style:italic">This item is currently unavailable. Contact us for alternatives.</div>`}
+    </div>`;
+}
+
+function chQty(d){
+  qty=Math.max(1,Math.min(currentItem?.quantity||99,qty+d));
+  document.getElementById('qtyVal').textContent=qty; calcPrice();
+}
+function calcPrice(){
+  const s=new Date(document.getElementById('d-start').value),e=new Date(document.getElementById('d-end').value);
+  const p=Number(currentItem?.pricePerDay||currentItem?.price||0);
+  let days=Math.max(1,Math.round((e-s)/86400000)); if(isNaN(days))days=1;
+  const total=p*days*qty;
+  document.getElementById('ps-days').innerHTML=`<span>Duration</span><span>${days} day${days!==1?'s':''}</span>`;
+  document.getElementById('ps-qty').innerHTML=`<span>Quantity</span><span>× ${qty}</span>`;
+  document.getElementById('ps-total').textContent=`$${total.toFixed(2)}`;
+}
+
+async function submitBooking(){
+  const first=document.getElementById('d-first').value.trim();
+  const last=document.getElementById('d-last').value.trim();
+  const email=document.getElementById('d-email').value.trim();
+  const phone=document.getElementById('d-phone').value.trim();
+  const notes=document.getElementById('d-notes').value.trim();
+  const start=document.getElementById('d-start').value;
+  const end=document.getElementById('d-end').value;
+  if(!first||!last){ toast('Please enter your name','err'); return; }
+  if(!email||!/\S+@\S+\.\S+/.test(email)){ toast('Please enter a valid email','err'); return; }
+  if(!start||!end||new Date(end)<=new Date(start)){ toast('Please check your dates','err'); return; }
+  const btn=document.getElementById('bookBtn'); btn.disabled=true; btn.textContent='Sending…';
+  const item=currentItem, price=Number(item.pricePerDay||item.price||0);
+  const days=Math.max(1,Math.round((new Date(end)-new Date(start))/86400000));
+  const total=price*days*qty;
+  const payload={booking:{contactDetails:{firstName:first,lastName:last,email,phone:phone||undefined},additionalFields:{fields:[{id:'itemId',value:{stringValue:item.id}},{id:'itemTitle',value:{stringValue:item.title||''}},{id:'quantity',value:{numberValue:qty}},{id:'notes',value:{stringValue:notes}},{id:'total',value:{numberValue:total}}]},...(item.bookingServiceId?{bookedEntity:{slot:{serviceId:item.bookingServiceId,startDate:new Date(start).toISOString(),endDate:new Date(end).toISOString()}}}:{})}};
+  try{
+    const r=await fetch(BOOK_API,{method:'POST',headers:{'Content-Type':'application/json','Authorization':CFG.apiKey,'wix-site-id':SITE_ID},body:JSON.stringify(payload)});
+    const bd=await r.json();
+    if(!r.ok&&r.status!==400&&r.status!==422) throw new Error(bd.message||`HTTP ${r.status}`);
+    const ref=bd.booking?.id||genRef();
+    showSuccess(ref,email,start,end,total);
+    toParent({type:'RENTAL_BOOKING_CREATED',bookingId:ref,itemId:item.id,itemTitle:item.title,email,total,startDate:start,endDate:end});
+  }catch(e){
+    toast('Could not submit: '+(e.message||'Unknown error'),'err');
+    btn.disabled=false; btn.textContent='Request Reservation';
+  }
+}
+
+function genRef(){ return 'GRD-'+Math.random().toString(36).slice(2,8).toUpperCase(); }
+function showSuccess(ref,email,start,end,total){
+  document.getElementById('detailBody').innerHTML=`
+    <div class="success-view">
+      <div class="success-flourish">🌸</div>
+      <div class="success-title">Request Received</div>
+      <div class="success-msg">Thank you! Gardenia will review your reservation and confirm within 24 hours. A copy has been sent to <strong>${email}</strong>.</div>
+      <div class="success-ref">${ref}</div>
+      <div class="success-dates">${start} → ${end} &nbsp;·&nbsp; Est. $${Number(total).toFixed(2)}</div>
+      <button class="btn-outline" onclick="closePanel();loadItems()">Continue Browsing</button>
+    </div>`;
+  toast('Request submitted — '+ref,'ok');
+}
+
+function toast(msg,type='info',dur=4000){
+  const c=document.getElementById('toasts'),t=document.createElement('div');
+  t.className=`toast toast-${type==='ok'?'ok':type==='err'?'err':'info'}`;
+  t.textContent=msg; c.appendChild(t);
+  setTimeout(()=>{t.style.transition='opacity .25s';t.style.opacity='0';setTimeout(()=>t.remove(),300);},dur);
+}
+</script>
+</body>
+</html>

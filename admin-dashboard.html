@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gardenia — Admin Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fff;--sf:#f8f8f8;--sf2:#f0f0f0;
+  --br:#e3e3e3;--br2:#b0b0b0;
+  --ink:#111;--mid:#3a3a3a;--muted:#777;--dim:#bbb;
+  --green:#2e6e4a;--green-bg:#f0f8f4;
+  --red:#943030;--red-bg:#fdf2f2;
+  --amber:#8a6000;--amber-bg:#fdf8ee;
+  --blue:#1a4a8a;--blue-bg:#f0f4fc;
+  --r:3px;--fd:'Cormorant Garamond',serif;--fb:'Montserrat',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--fb);background:var(--sf);color:var(--ink);font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased}
+
+/* ── HEADER */
+.hdr{background:var(--ink);color:#fff;padding:14px 28px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.hdr-brand{font-family:var(--fd);font-size:22px;font-style:italic}
+.hdr-brand small{font-family:var(--fb);font-size:9px;font-style:normal;font-weight:500;letter-spacing:.16em;text-transform:uppercase;opacity:.6;display:block;margin-top:1px}
+.hdr-right{display:flex;align-items:center;gap:10px}
+.hdr-time{font-size:10px;opacity:.5;letter-spacing:.06em}
+.btn-refresh{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:var(--r);padding:5px 12px;color:#fff;font-family:var(--fb);font-size:10px;font-weight:500;letter-spacing:.06em;cursor:pointer;transition:all .12s;text-transform:uppercase}
+.btn-refresh:hover{background:rgba(255,255,255,.2)}
+
+/* ── NAV TABS */
+.nav{background:var(--bg);border-bottom:1px solid var(--br);display:flex;gap:0;padding:0 28px;overflow-x:auto}
+.nav-tab{padding:12px 18px;font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .12s;white-space:nowrap}
+.nav-tab:hover{color:var(--ink)}
+.nav-tab.on{color:var(--ink);border-bottom-color:var(--ink)}
+
+/* ── CONTENT AREA */
+.content{padding:20px 28px;max-width:1200px}
+
+/* ── STAT CARDS */
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;margin-bottom:20px}
+.stat-card{background:var(--bg);border:1px solid var(--br);border-radius:var(--r);padding:14px 16px}
+.stat-label{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:6px}
+.stat-val{font-family:var(--fd);font-size:28px;color:var(--ink)}
+.stat-sub{font-size:10px;color:var(--muted);margin-top:2px}
+
+/* ── SECTION HEADER */
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.sec-title{font-family:var(--fd);font-size:18px;color:var(--ink)}
+.filter-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.filter-chip{padding:4px 12px;border:1px solid var(--br);border-radius:100px;font-size:10px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);background:transparent;cursor:pointer;transition:all .12s}
+.filter-chip:hover{border-color:var(--br2);color:var(--ink)}
+.filter-chip.on{border-color:var(--ink);background:var(--ink);color:#fff}
+
+/* ── TABLE */
+.tbl-wrap{background:var(--bg);border:1px solid var(--br);border-radius:var(--r);overflow:hidden;overflow-x:auto}
+.tbl{width:100%;border-collapse:collapse;min-width:640px}
+.tbl th{padding:9px 14px;text-align:left;font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);background:var(--sf);border-bottom:1px solid var(--br)}
+.tbl td{padding:11px 14px;border-bottom:1px solid var(--br);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:var(--sf)}
+
+.t-name{font-weight:500;color:var(--ink)}
+.t-item{font-size:11px;color:var(--muted)}
+.t-date{font-size:11px;color:var(--mid)}
+.t-price{font-family:var(--fd);font-size:16px;color:var(--ink)}
+.t-dep{font-size:10px;color:var(--muted)}
+
+/* STATUS BADGES */
+.badge{display:inline-block;padding:2px 9px;border-radius:100px;font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+.badge-pending{background:var(--amber-bg);color:var(--amber);border:1px solid rgba(138,96,0,.2)}
+.badge-confirmed{background:var(--green-bg);color:var(--green);border:1px solid rgba(46,110,74,.2)}
+.badge-cancelled{background:var(--red-bg);color:var(--red);border:1px solid rgba(148,48,48,.2)}
+.badge-available{background:var(--green-bg);color:var(--green);border:1px solid rgba(46,110,74,.2)}
+.badge-unavailable{background:var(--sf2);color:var(--muted);border:1px solid var(--br)}
+
+/* ACTION BUTTONS */
+.actions{display:flex;gap:5px;align-items:center}
+.btn-act{padding:4px 10px;border-radius:var(--r);font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;border:1px solid;transition:all .12s}
+.btn-confirm{background:var(--green-bg);color:var(--green);border-color:rgba(46,110,74,.3)}
+.btn-confirm:hover{background:var(--green);color:#fff}
+.btn-cancel{background:var(--red-bg);color:var(--red);border-color:rgba(148,48,48,.3)}
+.btn-cancel:hover{background:var(--red);color:#fff}
+.btn-toggle{background:var(--sf);color:var(--mid);border-color:var(--br)}
+.btn-toggle:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+.btn-view{background:var(--blue-bg);color:var(--blue);border-color:rgba(26,74,138,.2)}
+.btn-view:hover{background:var(--blue);color:#fff}
+
+/* CATALOG GRID */
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.cat-card{background:var(--bg);border:1px solid var(--br);border-radius:var(--r);overflow:hidden}
+.cat-img{width:100%;aspect-ratio:3/2;object-fit:cover;background:var(--sf2);display:block}
+.cat-ph{width:100%;aspect-ratio:3/2;background:var(--sf2);display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--dim)}
+.cat-body{padding:12px}
+.cat-name{font-family:var(--fd);font-size:16px;color:var(--ink);margin-bottom:3px}
+.cat-cat{font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:8px}
+.cat-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.cat-price{font-family:var(--fd);font-size:18px;color:var(--ink)}
+.cat-price span{font-size:10px;color:var(--muted);font-family:var(--fb)}
+.cat-foot{display:flex;gap:5px;border-top:1px solid var(--br);padding-top:10px}
+
+/* DETAIL MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-bg.on{opacity:1;pointer-events:all}
+.modal{background:var(--bg);border-radius:var(--r);width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal-hdr{padding:16px 20px;border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg);z-index:10}
+.modal-title{font-family:var(--fd);font-size:18px;color:var(--ink)}
+.modal-body{padding:20px}
+.modal-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--br);font-size:12px}
+.modal-row:last-child{border-bottom:none}
+.modal-row-l{color:var(--muted);font-weight:500}
+.modal-row-r{color:var(--ink);text-align:right;max-width:60%}
+.modal-foot{padding:16px 20px;border-top:1px solid var(--br);display:flex;gap:8px;justify-content:flex-end}
+.btn-x{background:none;border:none;font-size:18px;color:var(--muted);cursor:pointer;line-height:1}
+.btn-x:hover{color:var(--ink)}
+
+/* STATES */
+.state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 20px;gap:8px;color:var(--muted);text-align:center}
+.spin{width:22px;height:22px;border:2px solid var(--br);border-top-color:var(--ink);border-radius:50%;animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.state-ttl{font-family:var(--fd);font-size:18px;font-style:italic;color:var(--ink)}
+
+/* TOAST */
+.toasts{position:fixed;bottom:16px;right:16px;z-index:999;display:flex;flex-direction:column;gap:6px}
+.toast{padding:9px 14px;border-radius:var(--r);font-size:11px;font-weight:500;border:1px solid;white-space:nowrap;animation:ti .2s ease;box-shadow:0 4px 12px rgba(0,0,0,.1)}
+.t-ok{background:var(--bg);color:var(--green);border-color:var(--green)}
+.t-err{background:var(--bg);color:var(--red);border-color:var(--red)}
+.t-inf{background:var(--ink);color:#fff;border-color:var(--ink)}
+@keyframes ti{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:translateX(0)}}
+
+/* EMPTY STATE */
+.empty-row td{text-align:center;padding:32px;color:var(--muted);font-style:italic;font-family:var(--fd);font-size:15px}
+
+/* PAGE VISIBILITY */
+.page{display:none}.page.on{display:block}
+
+/* ADD ITEM FORM */
+.add-form{background:var(--bg);border:1px solid var(--br);border-radius:var(--r);padding:20px;margin-bottom:20px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.frow{margin-bottom:0}
+.lbl{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:4px;display:block}
+.inp,.ta,.sel{width:100%;background:var(--bg);border:1px solid var(--br);border-radius:var(--r);padding:8px 10px;font-family:var(--fb);font-size:12px;color:var(--ink);outline:none;transition:border-color .12s}
+.inp:focus,.ta:focus,.sel:focus{border-color:var(--br2)}
+.inp::placeholder,.ta::placeholder{color:var(--dim)}
+.ta{resize:vertical;min-height:72px}
+.toggle-row{display:flex;align-items:center;gap:10px;margin-top:4px}
+.toggle{width:36px;height:20px;background:var(--br2);border-radius:100px;position:relative;cursor:pointer;transition:background .12s;flex-shrink:0;border:none}
+.toggle.on{background:var(--green)}
+.toggle::after{content:'';position:absolute;width:16px;height:16px;background:#fff;border-radius:50%;top:2px;left:2px;transition:transform .12s}
+.toggle.on::after{transform:translateX(16px)}
+.form-full{grid-column:1/-1}
+.btn-add{padding:10px 20px;background:var(--ink);color:#fff;border:none;border-radius:var(--r);font-family:var(--fb);font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:opacity .12s}
+.btn-add:hover{opacity:.82}
+.btn-add:disabled{opacity:.4;cursor:not-allowed}
+
+@media(max-width:600px){
+  .hdr,.nav,.content{padding-left:14px;padding-right:14px}
+  .stats{grid-template-columns:1fr 1fr}
+  .form-grid{grid-template-columns:1fr}
+  .cat-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-brand">Gardenia<small>Admin Dashboard</small></div>
+  <div class="hdr-right">
+    <span class="hdr-time" id="clock"></span>
+    <button class="btn-refresh" onclick="loadAll()">↺ Refresh</button>
+  </div>
+</header>
+
+<nav class="nav">
+  <div class="nav-tab on" onclick="switchTab('bookings',this)">Bookings <span id="badge-bookings"></span></div>
+  <div class="nav-tab" onclick="switchTab('catalog',this)">Catalog</div>
+  <div class="nav-tab" onclick="switchTab('add',this)">+ Add Item</div>
+</nav>
+
+<!-- ── BOOKINGS PAGE -->
+<div class="content page on" id="page-bookings">
+  <div class="stats" id="statsRow">
+    <div class="stat-card"><div class="stat-label">Total Requests</div><div class="stat-val" id="s-total">—</div></div>
+    <div class="stat-card"><div class="stat-label">Pending</div><div class="stat-val" id="s-pending" style="color:var(--amber)">—</div></div>
+    <div class="stat-card"><div class="stat-label">Confirmed</div><div class="stat-val" id="s-confirmed" style="color:var(--green)">—</div></div>
+    <div class="stat-card"><div class="stat-label">Est. Revenue</div><div class="stat-val" id="s-revenue">—</div><div class="stat-sub">confirmed only</div></div>
+  </div>
+
+  <div class="sec-hdr">
+    <div class="sec-title">Booking Requests</div>
+    <div class="filter-row">
+      <button class="filter-chip on" onclick="filterBookings('all',this)">All</button>
+      <button class="filter-chip" onclick="filterBookings('pending',this)">Pending</button>
+      <button class="filter-chip" onclick="filterBookings('confirmed',this)">Confirmed</button>
+      <button class="filter-chip" onclick="filterBookings('cancelled',this)">Cancelled</button>
+    </div>
+  </div>
+
+  <div class="tbl-wrap">
+    <div class="state" id="bkLoad"><div class="spin"></div></div>
+    <table class="tbl" id="bkTable" style="display:none">
+      <thead>
+        <tr>
+          <th>Customer</th>
+          <th>Item</th>
+          <th>Dates</th>
+          <th>Total</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="bkBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ── CATALOG PAGE -->
+<div class="content page" id="page-catalog">
+  <div class="sec-hdr">
+    <div class="sec-title">Rental Catalog</div>
+    <div class="sec-count" id="catCount"></div>
+  </div>
+  <div class="state" id="catLoad"><div class="spin"></div></div>
+  <div class="cat-grid" id="catGrid" style="display:none"></div>
+</div>
+
+<!-- ── ADD ITEM PAGE -->
+<div class="content page" id="page-add">
+  <div class="sec-hdr">
+    <div class="sec-title">Add New Rental Item</div>
+  </div>
+  <div class="add-form">
+    <div class="form-grid">
+      <div class="frow">
+        <label class="lbl">Item Name *</label>
+        <input class="inp" id="a-title" type="text" placeholder="e.g. Gold Arch">
+      </div>
+      <div class="frow">
+        <label class="lbl">Category</label>
+        <input class="inp" id="a-category" type="text" placeholder="e.g. Arches, Furniture, Lighting">
+      </div>
+      <div class="frow">
+        <label class="lbl">Price Per Day ($) *</label>
+        <input class="inp" id="a-price" type="number" placeholder="150" min="0">
+      </div>
+      <div class="frow">
+        <label class="lbl">Deposit Amount ($)</label>
+        <input class="inp" id="a-deposit" type="number" placeholder="50" min="0">
+      </div>
+      <div class="frow">
+        <label class="lbl">Minimum Days</label>
+        <input class="inp" id="a-mindays" type="number" placeholder="1" min="1">
+      </div>
+      <div class="frow">
+        <label class="lbl">Quantity Available</label>
+        <input class="inp" id="a-qty" type="number" placeholder="1" min="1">
+      </div>
+      <div class="frow form-full">
+        <label class="lbl">Description</label>
+        <textarea class="ta" id="a-desc" placeholder="Describe the item — dimensions, colors, setup details…"></textarea>
+      </div>
+      <div class="frow form-full">
+        <label class="lbl">Main Image URL</label>
+        <input class="inp" id="a-image" type="url" placeholder="https://...">
+      </div>
+      <div class="frow form-full">
+        <label class="lbl">Additional Images (comma-separated URLs)</label>
+        <input class="inp" id="a-images" type="text" placeholder="https://..., https://...">
+      </div>
+      <div class="frow form-full">
+        <label class="lbl">Available for Rental</label>
+        <div class="toggle-row">
+          <button class="toggle on" id="a-avail" onclick="toggleAvail()"></button>
+          <span id="a-avail-lbl" style="font-size:12px;color:var(--green);font-weight:500">Yes — available</span>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:16px;display:flex;align-items:center;gap:12px">
+      <button class="btn-add" id="addBtn" onclick="addItem()">Add Item to Catalog</button>
+      <span id="addMsg" style="font-size:11px;color:var(--muted)"></span>
+    </div>
+  </div>
+</div>
+
+<!-- BOOKING DETAIL MODAL -->
+<div class="modal-bg" id="modalBg" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title" id="modalTitle">Booking Detail</div>
+      <button class="btn-x" onclick="closeModalDirect()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-foot" id="modalFoot"></div>
+  </div>
+</div>
+
+<div class="toasts" id="toasts"></div>
+
+<script>
+const BASE        = 'https://www.gardeniaeventdecor.com';
+const CATALOG_URL = BASE + '/_functions/rentalCatalog';
+const BOOKINGS_URL= BASE + '/_functions/adminBookings';
+const UPDATE_URL  = BASE + '/_functions/adminUpdateBooking';
+const ADDITEM_URL = BASE + '/_functions/adminAddItem';
+
+let allBookings=[], filteredBookings=[], allCatalog=[];
+let bookingFilter='all', availToggle=true;
+
+// ── CLOCK
+setInterval(()=>{
+  const n=new Date();
+  document.getElementById('clock').textContent=n.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+},1000);
+
+// ── TABS
+function switchTab(name,btn){
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('page-'+name).classList.add('on');
+  if(name==='catalog'&&!allCatalog.length) loadCatalog();
+}
+
+window.onload=()=>{loadAll();};
+
+async function loadAll(){
+  loadBookings();
+}
+
+// ── LOAD BOOKINGS
+async function loadBookings(){
+  document.getElementById('bkLoad').style.display='flex';
+  document.getElementById('bkTable').style.display='none';
+  try{
+    const r=await fetch(BOOKINGS_URL);
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const d=await r.json();
+    if(d.error) throw new Error(d.error);
+    allBookings=d.bookings||[];
+    renderStats();
+    applyBookingFilter();
+    document.getElementById('bkLoad').style.display='none';
+    document.getElementById('bkTable').style.display='table';
+  }catch(e){
+    document.getElementById('bkLoad').innerHTML='<div style="color:var(--red);font-size:12px">'+
+      'Could not load bookings. Make sure http-functions.js is published.<br><small>'+e.message+'</small></div>';
+  }
+}
+
+function renderStats(){
+  const total=allBookings.length;
+  const pending=allBookings.filter(b=>b.status==='pending').length;
+  const confirmed=allBookings.filter(b=>b.status==='confirmed').length;
+  const revenue=allBookings.filter(b=>b.status==='confirmed').reduce((s,b)=>s+Number(b.total||0),0);
+  document.getElementById('s-total').textContent=total;
+  document.getElementById('s-pending').textContent=pending;
+  document.getElementById('s-confirmed').textContent=confirmed;
+  document.getElementById('s-revenue').textContent='$'+revenue.toFixed(0);
+  const pb=document.getElementById('badge-bookings');
+  pb.textContent=pending?` (${pending} new)`:'';
+  pb.style.color='var(--amber)';
+}
+
+function filterBookings(f,btn){
+  bookingFilter=f;
+  document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('on'));
+  btn.classList.add('on');
+  applyBookingFilter();
+}
+
+function applyBookingFilter(){
+  filteredBookings=bookingFilter==='all'?allBookings:allBookings.filter(b=>b.status===bookingFilter);
+  renderBookings();
+}
+
+function renderBookings(){
+  const tbody=document.getElementById('bkBody');
+  if(!filteredBookings.length){
+    tbody.innerHTML='<tr class="empty-row"><td colspan="6">No bookings found</td></tr>';
+    return;
+  }
+  tbody.innerHTML=filteredBookings.map(b=>{
+    const name=(b.firstName||'')+' '+(b.lastName||'');
+    const start=b.startDate?fmtDate(new Date(b.startDate)):'—';
+    const end=b.endDate?fmtDate(new Date(b.endDate)):'—';
+    const submitted=b.submittedAt?fmtDate(new Date(b.submittedAt)):'—';
+    const dep=Number(b.depositAmount||0);
+    return`<tr>
+      <td>
+        <div class="t-name">${name}</div>
+        <div class="t-item">${b.email||''}</div>
+        <div class="t-item">${b.phone||''}</div>
+      </td>
+      <td>
+        <div class="t-name">${b.itemTitle||'—'}</div>
+        <div class="t-item">Qty: ${b.quantity||1}</div>
+      </td>
+      <td>
+        <div class="t-date">${start}</div>
+        <div class="t-date">→ ${end}</div>
+        <div class="t-item">Submitted: ${submitted}</div>
+      </td>
+      <td>
+        <div class="t-price">$${Number(b.total||0).toFixed(0)}</div>
+        ${dep?`<div class="t-dep">$${dep.toFixed(0)} deposit</div>`:''}
+      </td>
+      <td><span class="badge badge-${b.status||'pending'}">${b.status||'pending'}</span></td>
+      <td>
+        <div class="actions">
+          <button class="btn-act btn-view" onclick="viewBooking('${b._id}')">View</button>
+          ${b.status==='pending'?`
+          <button class="btn-act btn-confirm" onclick="updateStatus('${b._id}','confirmed')">✓</button>
+          <button class="btn-act btn-cancel" onclick="updateStatus('${b._id}','cancelled')">✕</button>`:''}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ── UPDATE BOOKING STATUS
+async function updateStatus(id,status){
+  try{
+    const r=await fetch(UPDATE_URL,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({bookingId:id,status})
+    });
+    const d=await r.json();
+    if(!r.ok||d.error) throw new Error(d.error||'Failed');
+    toast(status==='confirmed'?'Booking confirmed ✓':'Booking cancelled','ok');
+    closeModalDirect();
+    loadBookings();
+  }catch(e){toast('Error: '+e.message,'err');}
+}
+
+// ── VIEW BOOKING DETAIL
+function viewBooking(id){
+  const b=allBookings.find(x=>x._id===id); if(!b)return;
+  document.getElementById('modalTitle').textContent=(b.firstName||'')+' '+(b.lastName||'');
+  const start=b.startDate?fmtDate(new Date(b.startDate)):'—';
+  const end=b.endDate?fmtDate(new Date(b.endDate)):'—';
+  const dep=Number(b.depositAmount||0);
+  document.getElementById('modalBody').innerHTML=`
+    <div class="modal-row"><span class="modal-row-l">Status</span><span class="modal-row-r"><span class="badge badge-${b.status||'pending'}">${b.status||'pending'}</span></span></div>
+    <div class="modal-row"><span class="modal-row-l">Item</span><span class="modal-row-r">${b.itemTitle||'—'}</span></div>
+    <div class="modal-row"><span class="modal-row-l">Dates</span><span class="modal-row-r">${start} → ${end} (${b.days||'?'} days)</span></div>
+    <div class="modal-row"><span class="modal-row-l">Quantity</span><span class="modal-row-r">${b.quantity||1}</span></div>
+    <div class="modal-row"><span class="modal-row-l">Rate</span><span class="modal-row-r">$${Number(b.pricePerDay||0).toFixed(2)} / day</span></div>
+    <div class="modal-row"><span class="modal-row-l">Total</span><span class="modal-row-r" style="font-family:var(--fd);font-size:18px">$${Number(b.total||0).toFixed(2)}</span></div>
+    ${dep?`<div class="modal-row"><span class="modal-row-l">Deposit</span><span class="modal-row-r">$${dep.toFixed(2)}</span></div>`:''}
+    <div class="modal-row"><span class="modal-row-l">Email</span><span class="modal-row-r"><a href="mailto:${b.email}" style="color:var(--blue)">${b.email||'—'}</a></span></div>
+    <div class="modal-row"><span class="modal-row-l">Phone</span><span class="modal-row-r">${b.phone||'—'}</span></div>
+    ${b.notes?`<div class="modal-row"><span class="modal-row-l">Notes</span><span class="modal-row-r">${b.notes}</span></div>`:''}
+    <div class="modal-row"><span class="modal-row-l">Ref</span><span class="modal-row-r" style="font-weight:600;letter-spacing:.06em">${b._id?'GRD-'+b._id.slice(0,6).toUpperCase():''}</span></div>
+  `;
+  document.getElementById('modalFoot').innerHTML=`
+    ${b.status==='pending'?`
+    <button class="btn-act btn-confirm" onclick="updateStatus('${b._id}','confirmed')" style="padding:8px 14px;font-size:11px">Confirm Booking</button>
+    <button class="btn-act btn-cancel" onclick="updateStatus('${b._id}','cancelled')" style="padding:8px 14px;font-size:11px">Cancel</button>`:''}
+    <a href="mailto:${b.email}?subject=Your Gardenia Rental Request&body=Hi ${b.firstName}," class="btn-act btn-view" style="padding:8px 14px;font-size:11px;text-decoration:none">Email Customer</a>
+  `;
+  document.getElementById('modalBg').classList.add('on');
+}
+
+function closeModal(e){if(e.target===document.getElementById('modalBg'))closeModalDirect();}
+function closeModalDirect(){document.getElementById('modalBg').classList.remove('on');}
+
+// ── LOAD CATALOG
+async function loadCatalog(){
+  document.getElementById('catLoad').style.display='flex';
+  document.getElementById('catGrid').style.display='none';
+  try{
+    const r=await fetch(CATALOG_URL);
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const d=await r.json();
+    if(d.error) throw new Error(d.error);
+    allCatalog=d.items||[];
+    document.getElementById('catCount').textContent=allCatalog.length+' items';
+    renderCatalog();
+    document.getElementById('catLoad').style.display='none';
+    document.getElementById('catGrid').style.display='grid';
+  }catch(e){
+    document.getElementById('catLoad').innerHTML='<div style="color:var(--red);font-size:12px">'+e.message+'</div>';
+  }
+}
+
+function renderCatalog(){
+  document.getElementById('catGrid').innerHTML=allCatalog.map(item=>{
+    const av=item.available!==false;
+    const img=item.image||'';
+    const p=item.pricePerDay||0;
+    return`<div class="cat-card">
+      ${img?`<img class="cat-img" src="${img}" alt="${item.title||''}" loading="lazy" onerror="this.style.display='none'">`:`<div class="cat-ph">🌸</div>`}
+      <div class="cat-body">
+        <div class="cat-cat">${item.category||'Uncategorized'}</div>
+        <div class="cat-name">${item.title||'Untitled'}</div>
+        <div class="cat-meta">
+          <div class="cat-price">$${Number(p).toFixed(0)}<span>/ day</span></div>
+          <span class="badge ${av?'badge-available':'badge-unavailable'}">${av?'Active':'Hidden'}</span>
+        </div>
+        <div class="cat-foot">
+          <button class="btn-act btn-toggle" onclick="toggleItem('${item._id}',${!av})" style="flex:1">${av?'Hide':'Show'}</button>
+          ${item.bookingSlug?`<a class="btn-act btn-view" href="https://www.gardeniaeventdecor.com/booking-calendar/${item.bookingSlug}" target="_blank" style="text-decoration:none">Bookings ↗</a>`:''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function toggleItem(id,newAvail){
+  try{
+    const r=await fetch(BASE+'/_functions/adminToggleItem',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({itemId:id,available:newAvail})
+    });
+    const d=await r.json();
+    if(!r.ok||d.error) throw new Error(d.error||'Failed');
+    toast(newAvail?'Item now visible':'Item hidden','ok');
+    loadCatalog();
+  }catch(e){toast('Error: '+e.message,'err');}
+}
+
+// ── ADD ITEM
+function toggleAvail(){
+  availToggle=!availToggle;
+  const btn=document.getElementById('a-avail');
+  const lbl=document.getElementById('a-avail-lbl');
+  btn.classList.toggle('on',availToggle);
+  lbl.textContent=availToggle?'Yes — available':'No — hidden';
+  lbl.style.color=availToggle?'var(--green)':'var(--muted)';
+}
+
+async function addItem(){
+  const title=document.getElementById('a-title').value.trim();
+  const price=document.getElementById('a-price').value.trim();
+  if(!title){toast('Item name is required','err');return;}
+  if(!price){toast('Price is required','err');return;}
+
+  const btn=document.getElementById('addBtn');
+  const msg=document.getElementById('addMsg');
+  btn.disabled=true; btn.textContent='Adding…'; msg.textContent='';
+
+  const payload={
+    title,
+    category:   document.getElementById('a-category').value.trim(),
+    description:document.getElementById('a-desc').value.trim(),
+    pricePerDay:Number(price)||0,
+    depositAmount:Number(document.getElementById('a-deposit').value)||0,
+    minDays:    Number(document.getElementById('a-mindays').value)||1,
+    quantity:   Number(document.getElementById('a-qty').value)||1,
+    image:      document.getElementById('a-image').value.trim(),
+    images:     document.getElementById('a-images').value.trim(),
+    available:  availToggle,
+  };
+
+  try{
+    const r=await fetch(ADDITEM_URL,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload)
+    });
+    const d=await r.json();
+    if(!r.ok||d.error) throw new Error(d.error||'Failed');
+    toast('Item added — Wix Bookings service being created…','ok');
+    msg.textContent='✓ Added! Booking service auto-creating in background.';
+    // Clear form
+    ['a-title','a-category','a-desc','a-price','a-deposit','a-mindays','a-qty','a-image','a-images'].forEach(id=>{
+      document.getElementById(id).value='';
+    });
+    availToggle=true;
+    document.getElementById('a-avail').classList.add('on');
+    document.getElementById('a-avail-lbl').textContent='Yes — available';
+    allCatalog=[];
+  }catch(e){
+    toast('Error: '+e.message,'err');
+    msg.textContent='Failed: '+e.message;
+  }
+  btn.disabled=false; btn.textContent='Add Item to Catalog';
+}
+
+// ── HELPERS
+function fmtDate(d){return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
+
+function toast(msg,type='inf',dur=4000){
+  const c=document.getElementById('toasts'),t=document.createElement('div');
+  t.className='toast t-'+(type==='ok'?'ok':type==='err'?'err':'inf');
+  t.textContent=msg;c.appendChild(t);
+  setTimeout(()=>{t.style.transition='opacity .25s';t.style.opacity='0';setTimeout(()=>t.remove(),300);},dur);
+}
+</script>
+</body>
+</html>

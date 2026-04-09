@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gardenia Event Rentals</title>
+<style>
+:root {
+  --cr: #faf8f3;
+  --sf: #f0ebe0;
+  --bd: #ddd6c5;
+  --tx: #1c1a16;
+  --mu: #6b5f4e;
+  --hn: #a09080;
+  --sg: #5a6b4d;
+  --sgp: #d8e5ce;
+  --sr: Georgia, 'Palatino Linotype', serif;
+  --sn: -apple-system, 'Helvetica Neue', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--cr); color: var(--tx); font-family: var(--sn); font-size: 13px; }
+.gw { max-width: 960px; margin: 0 auto; padding: 36px 24px; }
+
+/* Header */
+.hdr { text-align: center; margin-bottom: 40px; }
+.hdr-eyebrow { font-size: 9px; letter-spacing: .22em; text-transform: uppercase; color: var(--mu); margin-bottom: 10px; }
+.hdr-title { font-family: var(--sr); font-size: 36px; font-weight: 400; line-height: 1.15; margin-bottom: 8px; }
+.hdr-sub { font-size: 12px; color: var(--mu); line-height: 1.7; }
+.hdr-div { width: 40px; height: 0.5px; background: var(--bd); margin: 18px auto; }
+
+/* Tabs */
+.tabs { display: flex; border-bottom: .5px solid var(--bd); margin-bottom: 30px; }
+.tab { font-size: 10px; letter-spacing: .18em; text-transform: uppercase; padding: 0 0 11px; margin-right: 28px; background: none; border: none; border-bottom: 1.5px solid transparent; margin-bottom: -.5px; cursor: pointer; color: var(--hn); font-family: var(--sn); }
+.tab.on { color: var(--tx); border-bottom-color: var(--tx); }
+
+/* Filter pills */
+.pills { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 24px; }
+.pill { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; padding: 5px 13px; border: .5px solid var(--bd); background: none; color: var(--mu); cursor: pointer; font-family: var(--sn); transition: all .15s; }
+.pill.on, .pill:hover { background: var(--tx); color: var(--cr); border-color: var(--tx); }
+
+/* Item count */
+.icount { font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--hn); margin-bottom: 18px; }
+
+/* Grid */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 0; border: .5px solid var(--bd); margin-bottom: 0; }
+.card { background: var(--cr); border-right: .5px solid var(--bd); border-bottom: .5px solid var(--bd); cursor: pointer; overflow: hidden; transition: background .15s; }
+.card:hover { background: #f4efe5; }
+.card:hover .cimg { background: #e5dfd3; }
+.cimg { background: var(--sf); aspect-ratio: 4/5; display: flex; align-items: center; justify-content: center; transition: background .15s; }
+.cimg svg { width: 40px; height: 40px; color: var(--hn); }
+.cbody { padding: 13px 15px; }
+.ccat { font-size: 9px; letter-spacing: .18em; text-transform: uppercase; color: var(--sg); margin-bottom: 4px; }
+.cname { font-family: var(--sr); font-size: 18px; font-weight: 400; line-height: 1.2; margin-bottom: 7px; }
+.cprice { font-size: 12px; color: var(--mu); }
+
+/* Detail panel */
+.det { border: .5px solid var(--bd); margin-bottom: 20px; display: none; }
+.det.on { display: grid; grid-template-columns: 230px 1fr; }
+.dimg { background: var(--sf); display: flex; align-items: center; justify-content: center; min-height: 280px; }
+.dimg svg { width: 58px; height: 58px; color: var(--hn); }
+.dbody { padding: 28px 26px; }
+.dcat { font-size: 9px; letter-spacing: .2em; text-transform: uppercase; color: var(--sg); margin-bottom: 8px; }
+.dname { font-family: var(--sr); font-size: 30px; font-weight: 400; line-height: 1.1; margin-bottom: 8px; }
+.dprice { font-size: 14px; color: var(--mu); margin-bottom: 14px; }
+.ddesc { font-size: 12px; color: var(--mu); line-height: 1.75; margin-bottom: 20px; }
+hr.g { border: none; border-top: .5px solid var(--bd); margin: 16px 0; }
+.lbl { font-size: 9px; letter-spacing: .18em; text-transform: uppercase; color: var(--hn); margin-bottom: 5px; display: block; }
+.inp { width: 100%; border: .5px solid var(--bd); background: white; padding: 9px 12px; font-size: 12px; font-family: var(--sn); color: var(--tx); outline: none; margin-bottom: 12px; }
+.inp:focus { border-color: var(--tx); }
+.dr { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.qrow { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.qb { width: 30px; height: 30px; border: .5px solid var(--bd); background: none; font-size: 17px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--tx); font-family: var(--sn); }
+.qb:hover { background: var(--sf); }
+.qn { font-size: 15px; min-width: 22px; text-align: center; }
+.nr { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.brow { display: flex; gap: 8px; margin-top: 6px; }
+.btn { flex: 1; padding: 12px; border: .5px solid var(--tx); background: var(--tx); color: var(--cr); font-size: 10px; letter-spacing: .18em; text-transform: uppercase; cursor: pointer; font-family: var(--sn); transition: all .15s; }
+.btn:hover { background: var(--sg); border-color: var(--sg); }
+.btn.gh { background: none; color: var(--tx); }
+.btn.gh:hover { background: var(--sf); }
+
+/* Confirmation */
+.cnf { text-align: center; padding: 40px 20px; }
+.cring { width: 46px; height: 46px; border: 1px solid var(--sg); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; }
+.cring svg { width: 22px; height: 22px; color: var(--sg); }
+.cnf h3 { font-family: var(--sr); font-size: 26px; font-weight: 400; margin-bottom: 8px; }
+.cnf p { font-size: 12px; color: var(--mu); line-height: 1.7; }
+
+/* Setup guide */
+.sup { display: none; }
+.sup.on { display: block; }
+.step { margin-bottom: 36px; padding-bottom: 36px; border-bottom: .5px solid var(--bd); }
+.step:last-child { border-bottom: none; }
+.snum { font-size: 9px; letter-spacing: .22em; text-transform: uppercase; color: var(--sg); margin-bottom: 7px; }
+.stitle { font-family: var(--sr); font-size: 24px; font-weight: 400; margin-bottom: 10px; }
+.sdesc { font-size: 12px; color: var(--mu); line-height: 1.8; margin-bottom: 14px; }
+.sdesc code { background: var(--sf); padding: 1px 5px; font-size: 11px; border: .5px solid var(--bd); }
+table.sc { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 10px; }
+table.sc th { text-align: left; padding: 8px 11px; background: var(--sf); font-weight: 500; border-bottom: .5px solid var(--bd); letter-spacing: .04em; }
+table.sc td { padding: 8px 11px; border-bottom: .5px solid var(--bd); color: var(--mu); vertical-align: top; }
+table.sc td:first-child { color: var(--tx); font-family: 'Courier New', monospace; font-size: 11px; }
+.tag { display: inline-block; padding: 2px 8px; font-size: 9px; letter-spacing: .06em; background: var(--sgp); color: var(--sg); }
+pre.co { background: #1c1a16; color: #c8d4be; padding: 18px; font-size: 11px; line-height: 1.75; overflow-x: auto; white-space: pre; margin-top: 12px; font-family: 'Courier New', monospace; border-left: 2px solid var(--sg); }
+.instr-list { list-style: none; padding: 0; }
+.instr-list li { font-size: 12px; color: var(--mu); padding: 8px 0 8px 20px; border-bottom: .5px solid var(--bd); position: relative; line-height: 1.6; }
+.instr-list li:before { content: "→"; position: absolute; left: 0; color: var(--sg); }
+
+/* Footer note */
+.fnote { font-size: 10px; letter-spacing: .08em; color: var(--hn); text-align: center; margin-top: 40px; padding-top: 20px; border-top: .5px solid var(--bd); }
+
+@media (max-width: 600px) {
+  .det.on { grid-template-columns: 1fr; }
+  .dimg { min-height: 200px; }
+  .grid { grid-template-columns: repeat(2, 1fr); }
+  .dr, .nr { grid-template-columns: 1fr; }
+  .hdr-title { font-size: 26px; }
+}
+</style>
+</head>
+<body>
+<div class="gw">
+
+  <!-- Header -->
+  <div class="hdr">
+    <div class="hdr-eyebrow">Dallas, Texas</div>
+    <h1 class="hdr-title">Event Item Rentals</h1>
+    <div class="hdr-sub">Browse our curated collection of decor and rental items.<br>Select any piece to check availability and request a booking.</div>
+    <div class="hdr-div"></div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab on" onclick="setTab('cat')">Rental Catalog</button>
+    <button class="tab" onclick="setTab('setup')">Wix Setup Guide</button>
+  </div>
+
+  <!-- CATALOG PANEL -->
+  <div id="cat">
+    <div class="pills" id="pills"></div>
+    <div class="icount" id="icount"></div>
+    <div class="det" id="det"></div>
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <!-- SETUP GUIDE PANEL -->
+  <div class="sup" id="setup"></div>
+
+  <div class="fnote">Gardenia Event Decor &nbsp;·&nbsp; gardeniaeventdecor.com</div>
+</div>
+
+<script>
+const W = {
+  wall: `<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="4" y="4" width="32" height="32" rx="1"/><line x1="4" y1="15" x2="36" y2="15"/><line x1="4" y1="25" x2="36" y2="25"/><line x1="13" y1="4" x2="13" y2="15"/><line x1="27" y1="15" x2="27" y2="25"/><line x1="13" y1="25" x2="13" y2="36"/></svg>`,
+  cloth: `<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 12 Q12 7 20 12 Q28 17 36 12"/><path d="M4 20 Q12 15 20 20 Q28 25 36 20"/><path d="M4 28 Q12 23 20 28 Q28 33 36 28"/></svg>`,
+  candle: `<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M17 9 Q20 4 23 9"/><line x1="20" y1="9" x2="20" y2="14"/><rect x="14" y="14" width="12" height="20" rx="1"/><line x1="10" y1="34" x2="30" y2="34"/></svg>`,
+  arch: `<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M7 36 L7 18 Q7 6 20 6 Q33 6 33 18 L33 36"/><path d="M12 36 L12 20 Q12 11 20 11 Q28 11 28 20 L28 36"/></svg>`,
+  glass: `<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M13 8 L27 8 L22 22 L22 32 L18 32 L18 22 Z"/><line x1="15" y1="34" x2="25" y2="34"/></svg>`,
+  ped: `<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="10" y="4" width="20" height="5" rx="1"/><rect x="17" y="9" width="6" height="22"/><rect x="7" y="31" width="26" height="5" rx="1"/></svg>`,
+  settee: `<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 28 Q4 20 8 20 L32 20 Q36 20 36 28"/><path d="M8 20 L8 16 Q8 12 12 12 L28 12 Q32 12 32 16 L32 20"/><line x1="4" y1="28" x2="36" y2="28"/><line x1="8" y1="28" x2="8" y2="34"/><line x1="32" y1="28" x2="32" y2="34"/></svg>`
+};
+
+const ITEMS = [
+  { id:1,  name: "White Floral Backdrop Wall",      cat: "Decorative Walls",      price: 175, desc: "8'×4' lush white floral backdrop, perfect for ceremony backgrounds, sweetheart tables, or photo opportunities. Customizable arrangements available.", icon: "wall" },
+  { id:2,  name: "Gold Sequin Shimmer Wall",         cat: "Decorative Walls",      price: 150, desc: "8'×4' gold sequin panel. Catches light beautifully for evening receptions, galas, and photo booth setups.", icon: "wall" },
+  { id:3,  name: "Blush Chiffon Drape Wall",         cat: "Decorative Walls",      price: 130, desc: "8'×4' flowing chiffon fabric in dusty blush rose. Soft and romantic, ideal for bridal showers and intimate ceremonies.", icon: "wall" },
+  { id:4,  name: 'White Satin Tablecloth 132"',      cat: "Tablecloths",           price: 22,  desc: 'Luxurious white satin tablecloth for 60" round tables. Wrinkle-resistant with an elegant floor-length drape.', icon: "cloth" },
+  { id:5,  name: "Ivory Lace Overlay",               cat: "Tablecloths",           price: 18,  desc: 'Delicate ivory lace overlay, 85" round. Beautiful layered over solid linens for a romantic, heirloom finish.', icon: "cloth" },
+  { id:6,  name: "Blush Velvet Runner",              cat: "Tablecloths",           price: 14,  desc: '14"×108" plush velvet runner in dusty blush. Adds warmth and texture to long farm and banquet tables.', icon: "cloth" },
+  { id:7,  name: "Silver 5-Arm Candelabra",          cat: "Candelabras & Lanterns",price: 55,  desc: 'Ornate silver 5-arm candelabra, 24" tall. Includes tapered candles. Minimum rental of 2 pieces recommended.', icon: "candle" },
+  { id:8,  name: "Gold Moroccan Lantern Set",        cat: "Candelabras & Lanterns",price: 45,  desc: "Set of 3 antique-gold Moroccan-style lanterns in small, medium, and large. Beautiful as centerpieces or aisle accents.", icon: "candle" },
+  { id:9,  name: "White Hexagon Arch 8ft",           cat: "Arches & Canopies",     price: 195, desc: "Modern geometric hexagon arch in matte white, 8ft tall. Can be dressed with florals, fabric, greenery, or lighting.", icon: "arch" },
+  { id:10, name: "Garden Floral Arch",               cat: "Arches & Canopies",     price: 325, desc: "Natural greenery arch with seasonal florals included, 8ft × 7ft. Full setup and tear-down service included.", icon: "arch" },
+  { id:11, name: "Champagne Coupe Set (12)",         cat: "Glassware",             price: 36,  desc: "Set of 12 vintage-style champagne coupes. Elegant for wedding toasts, tablescapes, and styled photo shoots.", icon: "glass" },
+  { id:12, name: 'Crystal Acrylic Pedestal 24"',    cat: "Pedestals",             price: 65,  desc: 'Clear acrylic pedestal column, 24" tall. Ideal for elevated floral arrangements, cakes, or decorative objects.', icon: "ped" },
+  { id:13, name: "Sweetheart Settee Set",            cat: "Sweetheart Tables",     price: 275, desc: "Ornate white loveseat settee with coordinating 36\" round table and linen. Complete sweetheart table setup.", icon: "settee" }
+];
+
+const CATS = ['All', ...[...new Set(ITEMS.map(i => i.cat))]];
+
+let flt = 'All', sel = null, qty = 1, done = false;
+
+function rPills() {
+  document.getElementById('pills').innerHTML = CATS.map(c =>
+    `<button class="pill${c === flt ? ' on' : ''}" onclick="setF(${JSON.stringify(c)})">${c}</button>`
+  ).join('');
+}
+
+function rCount() {
+  const n = flt === 'All' ? ITEMS.length : ITEMS.filter(i => i.cat === flt).length;
+  document.getElementById('icount').textContent = n + ' items';
+}
+
+function rGrid() {
+  const items = flt === 'All' ? ITEMS : ITEMS.filter(i => i.cat === flt);
+  document.getElementById('grid').innerHTML = items.map(it =>
+    `<div class="card" onclick="openD(${it.id})">
+      <div class="cimg"><div style="width:40px;height:40px;color:#a09080">${W[it.icon] || W.wall}</div></div>
+      <div class="cbody">
+        <div class="ccat">${it.cat}</div>
+        <div class="cname">${it.name}</div>
+        <div class="cprice">$${it.price} / day</div>
+      </div>
+    </div>`
+  ).join('');
+}
+
+function rDet() {
+  const d = document.getElementById('det');
+  if (!sel) { d.className = 'det'; return; }
+  const it = ITEMS.find(i => i.id === sel);
+  if (!it) { d.className = 'det'; return; }
+  d.className = 'det on';
+  d.innerHTML = `
+    <div class="dimg"><div style="width:58px;height:58px;color:#a09080">${W[it.icon] || W.wall}</div></div>
+    <div class="dbody">
+      ${done ? `
+        <div class="cnf">
+          <div class="cring"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 10 L8 14 L16 6"/></svg></div>
+          <h3>Booking Request Sent</h3>
+          <p>We've received your request for <em>${it.name}</em>.<br>The Gardenia team will be in touch to confirm your reservation and discuss event details.</p>
+          <button class="btn gh" style="max-width:200px;margin:22px auto 0;display:block" onclick="closeD()">Browse More Items</button>
+        </div>
+      ` : `
+        <div class="dcat">${it.cat}</div>
+        <div class="dname">${it.name}</div>
+        <div class="dprice">$${it.price} / day</div>
+        <div class="ddesc">${it.desc}</div>
+        <hr class="g">
+        <div class="dr" style="margin-bottom:0">
+          <div><label class="lbl">Event Start Date</label><input id="d1" class="inp" type="date"></div>
+          <div><label class="lbl">Event End Date</label><input id="d2" class="inp" type="date"></div>
+        </div>
+        <label class="lbl" style="margin-top:12px">Quantity</label>
+        <div class="qrow">
+          <button class="qb" onclick="aQ(-1)">−</button>
+          <span class="qn" id="qn">${qty}</span>
+          <button class="qb" onclick="aQ(1)">+</button>
+          <span style="font-size:11px;color:#a09080;margin-left:4px">× $${it.price} = $<span id="tot">${(qty * it.price).toFixed(2)}</span> / day</span>
+        </div>
+        <div class="nr">
+          <div><label class="lbl">Full Name</label><input id="cn" class="inp" type="text" placeholder="Your full name"></div>
+          <div><label class="lbl">Email Address</label><input id="ce" class="inp" type="email" placeholder="your@email.com"></div>
+        </div>
+        <div class="brow">
+          <button class="btn" onclick="subB()">Request Booking</button>
+          <button class="btn gh" onclick="closeD()">Close</button>
+        </div>
+      `}
+    </div>`;
+}
+
+function setF(c) { flt = c; sel = null; done = false; qty = 1; rPills(); rCount(); rGrid(); rDet(); }
+function openD(id) {
+  sel = id; done = false; qty = 1; rDet();
+  document.getElementById('det').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function closeD() { sel = null; done = false; rDet(); }
+function aQ(d) {
+  qty = Math.max(1, qty + d);
+  const q = document.getElementById('qn'), t = document.getElementById('tot');
+  if (q) q.textContent = qty;
+  if (t && sel) { const it = ITEMS.find(i => i.id === sel); if (it) t.textContent = (qty * it.price).toFixed(2); }
+}
+function subB() {
+  const n = document.getElementById('cn')?.value;
+  const e = document.getElementById('ce')?.value;
+  const d = document.getElementById('d1')?.value;
+  if (!n || !e || !d) { alert('Please enter your name, email, and event start date.'); return; }
+  done = true; rDet();
+}
+function setTab(t) {
+  document.getElementById('cat').style.display = t === 'cat' ? 'block' : 'none';
+  const s = document.getElementById('setup');
+  s.className = t === 'setup' ? 'sup on' : 'sup';
+  document.querySelectorAll('.tab').forEach((b, i) => b.className = 'tab' + (['cat', 'setup'][i] === t ? ' on' : ''));
+}
+
+// ── SETUP GUIDE CONTENT ─────────────────────────────────────────────
+document.getElementById('setup').innerHTML = `
+<div class="step">
+  <div class="snum">Step 1 of 4</div>
+  <div class="stitle">Create the CMS Collection</div>
+  <p class="sdesc">In the Wix Editor, go to <code>CMS → Create Collection</code> and name it <code>RentalItems</code>. Set the collection permissions to "Anyone can read" so the public can browse items. Add these fields:</p>
+  <table class="sc">
+    <tr><th>Field Name</th><th>Type</th><th>Notes</th></tr>
+    <tr><td>name</td><td><span class="tag">Text</span></td><td>Item display name — required</td></tr>
+    <tr><td>category</td><td><span class="tag">Text</span></td><td>Decorative Walls, Tablecloths, Candelabras &amp; Lanterns, Arches &amp; Canopies, Glassware, Pedestals, Sweetheart Tables</td></tr>
+    <tr><td>description</td><td><span class="tag">Rich Text</span></td><td>Full item description with specs</td></tr>
+    <tr><td>image</td><td><span class="tag">Image</span></td><td>Main product photo</td></tr>
+    <tr><td>gallery</td><td><span class="tag">Image Gallery</span></td><td>Additional photos (optional)</td></tr>
+    <tr><td>pricePerDay</td><td><span class="tag">Number</span></td><td>Daily rental rate in USD</td></tr>
+    <tr><td>quantityAvailable</td><td><span class="tag">Number</span></td><td>Total units in inventory</td></tr>
+    <tr><td>bookingServiceId</td><td><span class="tag">Text</span></td><td>Wix Bookings service ID — see Step 2</td></tr>
+    <tr><td>isAvailable</td><td><span class="tag">Boolean</span></td><td>Toggle off to hide seasonal or retired items</td></tr>
+    <tr><td>tags</td><td><span class="tag">Tags</span></td><td>Search keywords like "wedding", "outdoor", "luxury"</td></tr>
+  </table>
+</div>
+
+<div class="step">
+  <div class="snum">Step 2 of 4</div>
+  <div class="stitle">Configure Wix Bookings Services</div>
+  <p class="sdesc">Go to <strong>Wix Bookings → Services</strong>. Create one Booking Service per rental category (e.g., "Decorative Walls Rental", "Tablecloth Rental"). For each service:</p>
+  <ul class="instr-list">
+    <li>Set the service type to <strong>Appointment</strong> with a flexible duration (e.g. 1 day minimum)</li>
+    <li>Set availability to your operating dates and hours</li>
+    <li>Enable "Book Online" and connect to your payment settings</li>
+    <li>Copy the <strong>Service ID</strong> from the URL (e.g. <code>bookings/services/abc123...</code>)</li>
+    <li>Paste this Service ID into the <code>bookingServiceId</code> field in your CMS for all items in that category</li>
+  </ul>
+</div>
+
+<div class="step">
+  <div class="snum">Step 3 of 4</div>
+  <div class="stitle">Velo Page Code</div>
+  <p class="sdesc">Enable <strong>Velo Dev Mode</strong> in Wix Editor (bottom bar → "Enable Velo"). Create a new page called "Rentals" and paste this code into the page's code panel. Then add the corresponding UI elements (Repeater, Strip, Inputs, Buttons) from the Editor and wire them to these IDs:</p>
+  <pre class="co">// ─── Gardenia Event Decor — Rentals Page (Velo)
+// Requires: wix-data, wix-bookings
+// CMS Collection: RentalItems
+
+import wixData from 'wix-data';
+import wixBookings from 'wix-bookings';
+
+let selectedItem = null;
+let qty = 1;
+
+$w.onReady(async function () {
+  // Load all items on page ready
+  await loadItems('All');
+
+  // ── Category filter buttons ──────────────────────
+  // Add a Button element per category, assign IDs below
+  $w('#btnFilterAll').onClick(()       => loadItems('All'));
+  $w('#btnFilterWalls').onClick(()     => loadItems('Decorative Walls'));
+  $w('#btnFilterLinens').onClick(()    => loadItems('Tablecloths'));
+  $w('#btnFilterCandles').onClick(()   => loadItems('Candelabras & Lanterns'));
+  $w('#btnFilterArches').onClick(()    => loadItems('Arches & Canopies'));
+  $w('#btnFilterGlass').onClick(()     => loadItems('Glassware'));
+  $w('#btnFilterPed').onClick(()       => loadItems('Pedestals'));
+  $w('#btnFilterSweetheart').onClick(()=> loadItems('Sweetheart Tables'));
+
+  // ── Item repeater ────────────────────────────────
+  $w('#itemsRepeater').onItemReady(($item, itemData) => {
+    $item('#imgItem').src    = itemData.image;
+    $item('#txtName').text   = itemData.name;
+    $item('#txtCat').text    = itemData.category;
+    $item('#txtPrice').text  = '$' + itemData.pricePerDay + ' / day';
+    $item('#btnBook').onClick(() => openBooking(itemData));
+  });
+
+  // ── Booking form controls ────────────────────────
+  $w('#btnQtyMinus').onClick(() => updateQty(-1));
+  $w('#btnQtyPlus').onClick(()  => updateQty(1));
+  $w('#btnSubmitBooking').onClick(submitBooking);
+  $w('#btnCloseBooking').onClick(() => {
+    $w('#bookingStrip').collapse();
+    selectedItem = null;
+  });
+});
+
+// ── Load items from CMS ──────────────────────────────────────────────
+async function loadItems(category) {
+  let query = wixData.query('RentalItems')
+    .eq('isAvailable', true)
+    .ascending('name');
+
+  if (category !== 'All') {
+    query = query.eq('category', category);
+  }
+
+  const results = await query.find();
+  $w('#itemsRepeater').data = results.items;
+  $w('#txtItemCount').text  = results.items.length + ' items';
+}
+
+// ── Open booking form for selected item ──────────────────────────────
+function openBooking(item) {
+  selectedItem = item;
+  qty = 1;
+
+  $w('#txtSelectedItem').text  = item.name;
+  $w('#txtSelectedPrice').text = '$' + item.pricePerDay + ' / day';
+  $w('#txtQty').text           = '1';
+  $w('#txtTotal').text         = '$' + item.pricePerDay.toFixed(2);
+  $w('#txtError').hide();
+
+  $w('#bookingStrip').expand();
+  $w('#confirmStrip').collapse();
+}
+
+// ── Quantity controls ─────────────────────────────────────────────────
+function updateQty(delta) {
+  qty = Math.max(1, qty + delta);
+  $w('#txtQty').text = String(qty);
+  if (selectedItem) {
+    $w('#txtTotal').text = '$' + (qty * selectedItem.pricePerDay).toFixed(2);
+  }
+}
+
+// ── Submit booking via Wix Bookings ──────────────────────────────────
+async function submitBooking() {
+  const name      = $w('#inpClientName').value.trim();
+  const email     = $w('#inpClientEmail').value.trim();
+  const startDate = $w('#datePickerStart').value;
+  const endDate   = $w('#datePickerEnd').value;
+
+  if (!name || !email || !startDate || !selectedItem) {
+    $w('#txtError').text = 'Please complete all required fields.';
+    $w('#txtError').show();
+    return;
+  }
+
+  $w('#btnSubmitBooking').disable();
+
+  try {
+    await wixBookings.checkout({
+      serviceId:            selectedItem.bookingServiceId,
+      startDate:            startDate,
+      endDate:              endDate || startDate,
+      numberOfParticipants: qty,
+      contactDetails: {
+        firstName: name.split(' ')[0],
+        lastName:  name.split(' ').slice(1).join(' ') || '',
+        email:     email
+      }
+    });
+
+    // Success — show confirmation, hide form
+    $w('#bookingStrip').collapse();
+    $w('#confirmStrip').expand();
+    $w('#txtConfirmItem').text = selectedItem.name;
+    selectedItem = null;
+
+  } catch (err) {
+    $w('#txtError').text = 'Booking error: ' + err.message;
+    $w('#txtError').show();
+    $w('#btnSubmitBooking').enable();
+  }
+}</pre>
+</div>
+
+<div class="step">
+  <div class="snum">Step 4 of 4</div>
+  <div class="stitle">Embed This Widget on Any Wix Page</div>
+  <p class="sdesc">To embed this self-contained widget on an existing Wix page (instead of building a full Velo page), use an <strong>HTML iFrame</strong> component:</p>
+  <ul class="instr-list">
+    <li>In the Wix Editor, click <strong>Add Elements → Embed Code → HTML iFrame</strong></li>
+    <li>Host this HTML file on any web server (Vercel, Cloudflare Pages, or even your own server) and enter the URL — or paste the full HTML source directly into the embed editor</li>
+    <li>To load live data from your Wix CMS, replace the static <code>ITEMS</code> array in this file with a <code>fetch()</code> call to the Wix Data API: <code>https://www.wixapis.com/wix-data/v2/items/query</code> using your site ID and API key</li>
+    <li>For full Wix Bookings checkout, link the "Request Booking" button to your Wix Bookings page URL with pre-filled query params, or use the Velo approach from Step 3</li>
+    <li>Resize the iFrame to match your page layout — the widget is fully responsive</li>
+  </ul>
+</div>
+`;
+
+// ── Init ──────────────────────────────────────────────────────────────
+rPills();
+rCount();
+rGrid();
+rDet();
+</script>
+</body>
+</html>

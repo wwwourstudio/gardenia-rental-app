@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gardenia — Event Rentals</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fff;--sf:#f8f8f8;--sf2:#f0f0f0;--br:#e2e2e2;--br2:#b0b0b0;
+  --ink:#111;--mid:#3a3a3a;--muted:#777;--dim:#bbb;
+  --green:#2e6e4a;--red:#943030;--amber:#c47f1a;
+  --r:2px;--fd:'Cormorant Garamond',serif;--fb:'Montserrat',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--fb);background:var(--bg);color:var(--ink);font-size:13px;line-height:1.6;-webkit-font-smoothing:antialiased}
+
+/* ─── HEADER ─── */
+.hdr{padding:18px 28px 14px;border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.hdr-brand{font-family:var(--fd);font-size:24px;font-style:italic;color:var(--ink)}
+.hdr-brand small{font-family:var(--fb);font-size:9px;font-style:normal;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);display:block;margin-top:1px}
+.hdr-right{display:flex;align-items:center;gap:12px}
+#status{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+.cart-btn{background:var(--ink);color:#fff;border:none;border-radius:var(--r);padding:8px 16px;font-family:var(--fb);font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;gap:8px;transition:opacity .12s;position:relative}
+.cart-btn:hover{opacity:.82}
+.cart-count{background:#fff;color:var(--ink);width:18px;height:18px;border-radius:50%;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;line-height:1}
+.cart-count.hidden{display:none}
+
+/* ─── FILTERS ─── */
+.fbar{padding:10px 28px;border-bottom:1px solid var(--br);background:var(--sf);display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.flbl{font-size:9px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-right:4px}
+.chip{padding:4px 12px;border:1px solid var(--br2);border-radius:100px;font-size:10px;font-weight:500;letter-spacing:.05em;color:var(--muted);background:transparent;cursor:pointer;transition:all .12s;text-transform:uppercase;font-family:var(--fb)}
+.chip:hover{border-color:var(--ink);color:var(--ink)}
+.chip.on{border-color:var(--ink);background:var(--ink);color:#fff}
+.srch-wrap{margin-left:auto;position:relative}
+.srch-ico{position:absolute;left:9px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--dim);font-size:12px}
+.srch{background:var(--bg);border:1px solid var(--br);border-radius:100px;padding:6px 12px 6px 28px;font-family:var(--fb);font-size:11px;color:var(--ink);width:180px;outline:none;transition:border-color .12s}
+.srch::placeholder{color:var(--dim)}
+.srch:focus{border-color:var(--br2)}
+
+/* ─── SECTION ─── */
+.sec{padding:12px 28px;border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.sec-t{font-family:var(--fd);font-size:20px;color:var(--ink)}
+.sec-c{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+
+/* ─── GRID ─── */
+.main{padding:20px 28px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px}
+
+/* ─── CARDS ─── */
+.card{background:var(--bg);border:1px solid var(--br);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column;transition:border-color .15s,box-shadow .15s;position:relative}
+.card:hover{border-color:var(--br2);box-shadow:0 4px 16px rgba(0,0,0,.06)}
+.img-wrap{overflow:hidden;position:relative;cursor:pointer}
+.c-img{width:100%;aspect-ratio:4/3;object-fit:cover;background:var(--sf2);display:block;transition:transform .3s}
+.card:hover .c-img{transform:scale(1.04)}
+.c-ph{width:100%;aspect-ratio:4/3;background:var(--sf2);display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:28px}
+.c-badge{position:absolute;top:7px;right:7px;padding:2px 8px;border-radius:100px;font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+.b-yes{background:rgba(255,255,255,.92);color:var(--green);border:1px solid rgba(46,110,74,.25)}
+.b-no{background:rgba(255,255,255,.92);color:var(--dim);border:1px solid var(--br)}
+.c-body{padding:12px 14px 14px;flex:1;display:flex;flex-direction:column}
+.c-cat{font-size:9px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:var(--dim);margin-bottom:3px}
+.c-name{font-family:var(--fd);font-size:16px;color:var(--ink);line-height:1.25;margin-bottom:4px;cursor:pointer}
+.c-name:hover{text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:1px}
+.c-desc{font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;flex:1}
+.c-price{font-family:var(--fd);font-size:18px;color:var(--ink);margin-bottom:10px}
+.c-price-unit{font-size:10px;color:var(--muted);font-family:var(--fb)}
+.btn-add{width:100%;padding:9px;background:var(--ink);color:#fff;border:none;border-radius:var(--r);font-family:var(--fb);font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:opacity .12s}
+.btn-add:hover{opacity:.82}
+.btn-add.in-cart{background:var(--green)}
+.btn-add:disabled{opacity:.35;cursor:not-allowed}
+
+/* ─── DATE PICKER MODAL ─── */
+.dp-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s}
+.dp-overlay.on{opacity:1;pointer-events:all}
+.dp-box{background:var(--bg);border:1px solid var(--br);border-radius:var(--r);width:100%;max-width:400px;box-shadow:0 16px 48px rgba(0,0,0,.14);animation:popIn .2s ease}
+@keyframes popIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+.dp-head{padding:16px 20px 12px;border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between}
+.dp-item-name{font-family:var(--fd);font-size:18px;font-style:italic;color:var(--ink)}
+.dp-body{padding:18px 20px 20px}
+.dp-instruction{font-size:11px;color:var(--muted);margin-bottom:14px;text-align:center}
+
+/* CALENDAR */
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.cal-m{font-size:13px;font-weight:600;color:var(--ink)}
+.cal-arrow{background:none;border:1px solid var(--br);border-radius:var(--r);width:26px;height:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--muted);transition:all .12s}
+.cal-arrow:hover{border-color:var(--ink);color:var(--ink)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.dow{font-size:9px;font-weight:600;text-align:center;color:var(--dim);padding:3px 0;text-transform:uppercase;letter-spacing:.04em}
+.day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:11px;border-radius:var(--r);cursor:pointer;transition:all .1s;border:1px solid transparent;position:relative}
+.day.empty,.day.past{pointer-events:none;opacity:.3}
+.day:not(.past):not(.empty):hover{background:var(--sf2)}
+.day.sel-s,.day.sel-e{background:var(--ink)!important;color:#fff!important}
+.day.in-rng{background:var(--sf2)}
+.day.today::after{content:'';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:3px;height:3px;border-radius:50%;background:currentColor}
+.dp-dates{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.dp-date-box{background:var(--sf);border:1px solid var(--br);border-radius:var(--r);padding:8px 12px;text-align:center}
+.dp-date-lbl{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);margin-bottom:2px}
+.dp-date-val{font-size:12px;font-weight:500;color:var(--ink)}
+.dp-date-val.empty{color:var(--dim)}
+.dp-avail{margin-top:10px;padding:8px 12px;border-radius:var(--r);font-size:11px;font-weight:500;text-align:center;display:none}
+.dp-avail.ok{background:rgba(46,110,74,.08);color:var(--green);border:1px solid rgba(46,110,74,.2)}
+.dp-avail.na{background:rgba(148,48,48,.08);color:var(--red);border:1px solid rgba(148,48,48,.2)}
+.dp-price{margin-top:10px;display:flex;justify-content:space-between;font-size:12px;padding:8px 12px;background:var(--sf);border:1px solid var(--br);border-radius:var(--r)}
+.dp-price .amt{font-family:var(--fd);font-size:18px;font-weight:500}
+.dp-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+
+/* ─── CART DRAWER ─── */
+.cart-ov{position:fixed;inset:0;background:rgba(0,0,0,.38);z-index:150;opacity:0;pointer-events:none;transition:opacity .2s}
+.cart-ov.on{opacity:1;pointer-events:all}
+.cart-drawer{position:fixed;top:0;right:0;width:400px;max-width:96vw;height:100%;background:var(--bg);border-left:1px solid var(--br);transform:translateX(100%);transition:transform .26s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;z-index:151}
+.cart-ov.on .cart-drawer{transform:translateX(0)}
+.cart-top{padding:14px 20px;border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg);z-index:10}
+.cart-top-t{font-family:var(--fd);font-size:18px;color:var(--ink)}
+.cart-body{flex:1;overflow-y:auto;padding:16px 20px}
+.cart-empty{padding:40px 20px;text-align:center;color:var(--muted)}
+.cart-empty-ico{font-size:32px;display:block;margin-bottom:10px}
+.cart-empty-t{font-family:var(--fd);font-size:18px;font-style:italic;color:var(--ink);margin-bottom:6px}
+
+/* CART ITEM */
+.ci{display:grid;grid-template-columns:56px 1fr auto;gap:10px;align-items:start;padding:12px 0;border-bottom:1px solid var(--br)}
+.ci:last-child{border-bottom:none}
+.ci-img{width:56px;height:44px;object-fit:cover;border-radius:var(--r);background:var(--sf2)}
+.ci-img-ph{width:56px;height:44px;background:var(--sf2);border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--dim)}
+.ci-info{}
+.ci-name{font-family:var(--fd);font-size:14px;color:var(--ink);margin-bottom:2px}
+.ci-dates{font-size:10px;color:var(--muted);margin-bottom:3px}
+.ci-dates .avail-dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:4px;vertical-align:middle}
+.avail-dot.ok{background:var(--green)}
+.avail-dot.na{background:var(--red)}
+.avail-dot.checking{background:var(--amber)}
+.ci-qty{display:flex;align-items:center;gap:5px;margin-top:4px}
+.ci-qty-btn{background:var(--sf2);border:1px solid var(--br);width:22px;height:22px;border-radius:var(--r);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:all .1s}
+.ci-qty-btn:hover{border-color:var(--ink);color:var(--ink)}
+.ci-qty-n{font-size:12px;font-weight:600;min-width:20px;text-align:center;color:var(--ink)}
+.ci-price{font-family:var(--fd);font-size:16px;color:var(--ink);text-align:right;white-space:nowrap}
+.ci-remove{font-size:10px;color:var(--dim);cursor:pointer;text-transform:uppercase;letter-spacing:.06em;margin-top:2px;display:block;text-align:right;transition:color .1s}
+.ci-remove:hover{color:var(--red)}
+
+/* CART FOOTER */
+.cart-footer{border-top:1px solid var(--br);padding:16px 20px}
+.cart-totals{background:var(--sf);border:1px solid var(--br);border-radius:var(--r);padding:12px 14px;margin-bottom:14px}
+.ct-row{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:5px}
+.ct-row.tot{border-top:1px solid var(--br);padding-top:8px;margin-top:6px;margin-bottom:0;font-size:13px;color:var(--ink);font-weight:500}
+.ct-row.tot .amt{font-family:var(--fd);font-size:20px}
+.ct-row.dep{color:var(--amber);font-weight:500}
+.cart-avail-warn{background:rgba(148,48,48,.06);border:1px solid rgba(148,48,48,.15);border-radius:var(--r);padding:8px 12px;font-size:11px;color:var(--red);margin-bottom:10px;display:none}
+
+/* ─── CHECKOUT FORM ─── */
+.co-section{border-top:1px solid var(--br);padding-top:14px;margin-top:4px}
+.co-title{font-family:var(--fd);font-size:16px;font-style:italic;color:var(--ink);margin-bottom:12px}
+.row{margin-bottom:10px}
+.lbl{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:4px;display:block}
+.inp,.ta{width:100%;background:var(--bg);border:1px solid var(--br);border-radius:var(--r);padding:8px 11px;font-family:var(--fb);font-size:12px;color:var(--ink);outline:none;transition:border-color .12s}
+.inp:focus,.ta:focus{border-color:var(--mid)}
+.inp::placeholder,.ta::placeholder{color:var(--dim)}
+.ta{resize:vertical;min-height:56px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+
+/* PAYMENT TOGGLE */
+.pay-toggle{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.pay-opt{border:1px solid var(--br);border-radius:var(--r);padding:10px 12px;cursor:pointer;transition:all .12s;position:relative}
+.pay-opt.on{border-color:var(--ink);background:var(--sf)}
+.pay-opt-rb{position:absolute;top:10px;right:10px;width:14px;height:14px;border:2px solid var(--br2);border-radius:50%;transition:all .12s}
+.pay-opt.on .pay-opt-rb{border-color:var(--ink);background:var(--ink)}
+.pay-opt-title{font-size:11px;font-weight:600;color:var(--ink);margin-bottom:2px}
+.pay-opt-amt{font-family:var(--fd);font-size:17px;color:var(--ink)}
+.pay-opt-note{font-size:9px;color:var(--muted);margin-top:2px}
+
+/* BUTTONS */
+.btn-primary{width:100%;padding:12px;background:var(--ink);color:#fff;border:none;border-radius:var(--r);font-family:var(--fb);font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:opacity .12s}
+.btn-primary:hover{opacity:.82}
+.btn-primary:disabled{opacity:.35;cursor:not-allowed}
+.btn-ghost{width:100%;padding:9px;background:transparent;color:var(--muted);border:1px solid var(--br);border-radius:var(--r);font-family:var(--fb);font-size:10px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;margin-top:6px;transition:all .12s}
+.btn-ghost:hover{border-color:var(--ink);color:var(--ink)}
+.btn-x{background:none;border:1px solid var(--br);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;color:var(--muted);transition:all .12s}
+.btn-x:hover{border-color:var(--ink);color:var(--ink)}
+.form-note{font-size:10px;color:var(--dim);text-align:center;margin-top:8px;font-style:italic}
+
+/* ─── ORDER SUCCESS ─── */
+.success-view{display:flex;flex-direction:column;align-items:center;padding:32px 20px;text-align:center;gap:10px}
+.suc-ico{font-size:40px}
+.suc-ttl{font-family:var(--fd);font-size:26px;font-style:italic;color:var(--ink)}
+.suc-msg{font-size:12px;color:var(--muted);max-width:260px;line-height:1.65}
+.suc-ref{font-size:13px;font-weight:600;letter-spacing:.12em;color:var(--ink);border:1px solid var(--br);padding:5px 16px}
+.suc-next{background:var(--sf);border:1px solid var(--br);border-radius:var(--r);padding:12px 16px;text-align:left;width:100%;margin-top:4px}
+.suc-next-t{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:6px}
+.suc-step{font-size:11px;color:var(--mid);display:flex;gap:8px;align-items:flex-start;margin-bottom:4px}
+.suc-step span{color:var(--ink);font-weight:600;flex-shrink:0}
+
+/* ─── ADMIN DASHBOARD ─── */
+.admin-view{min-height:100vh;background:var(--bg)}
+.admin-hdr{padding:18px 28px;border-bottom:2px solid var(--ink);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.admin-hdr-brand{font-family:var(--fd);font-size:22px;font-style:italic}
+.admin-badge{background:var(--ink);color:#fff;font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:3px 10px;border-radius:100px}
+.admin-tabs{display:flex;gap:0;border-bottom:1px solid var(--br);background:var(--sf);overflow-x:auto}
+.admin-tab{padding:10px 20px;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border-bottom:2px solid transparent;color:var(--muted);transition:all .12s;white-space:nowrap;background:none;border-top:none;border-left:none;border-right:none;font-family:var(--fb)}
+.admin-tab.on{border-bottom-color:var(--ink);color:var(--ink)}
+.admin-body{padding:20px 28px}
+.orders-list{display:flex;flex-direction:column;gap:12px}
+.order-card{border:1px solid var(--br);border-radius:var(--r);overflow:hidden;transition:box-shadow .15s}
+.order-card:hover{box-shadow:0 2px 12px rgba(0,0,0,.06)}
+.oc-head{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;cursor:pointer;background:var(--sf)}
+.oc-ref{font-family:var(--fd);font-size:16px;font-style:italic;color:var(--ink)}
+.oc-customer{font-size:11px;color:var(--mid)}
+.oc-meta{font-size:10px;color:var(--muted)}
+.oc-status{padding:3px 10px;border-radius:100px;font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.s-pending{background:rgba(196,127,26,.1);color:var(--amber);border:1px solid rgba(196,127,26,.25)}
+.s-approved{background:rgba(46,110,74,.1);color:var(--green);border:1px solid rgba(46,110,74,.25)}
+.s-declined{background:rgba(148,48,48,.1);color:var(--red);border:1px solid rgba(148,48,48,.2)}
+.oc-body{padding:14px 16px;display:none;border-top:1px solid var(--br)}
+.oc-body.open{display:block}
+.oc-items{margin-bottom:12px}
+.oc-item-row{display:flex;justify-content:space-between;align-items:center;font-size:11px;padding:5px 0;border-bottom:1px solid var(--br)}
+.oc-item-row:last-child{border-bottom:none}
+.oc-item-name{font-weight:500;color:var(--ink)}
+.oc-item-detail{color:var(--muted)}
+.oc-financials{background:var(--sf);border:1px solid var(--br);border-radius:var(--r);padding:10px 14px;margin-bottom:12px}
+.oc-fin-row{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:4px}
+.oc-fin-row.tot{border-top:1px solid var(--br);padding-top:7px;margin-top:5px;margin-bottom:0;color:var(--ink);font-weight:500}
+.oc-fin-row.tot .f-amt{font-family:var(--fd);font-size:18px}
+.review-box{border:1px solid var(--br);border-radius:var(--r);padding:12px}
+.review-box-t{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px}
+.admin-note-inp{width:100%;background:var(--bg);border:1px solid var(--br);border-radius:var(--r);padding:7px 10px;font-family:var(--fb);font-size:11px;color:var(--ink);outline:none;margin-bottom:8px;resize:vertical;min-height:52px}
+.admin-note-inp:focus{border-color:var(--mid)}
+.review-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btn-approve{padding:9px;background:var(--green);color:#fff;border:none;border-radius:var(--r);font-family:var(--fb);font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:opacity .12s}
+.btn-approve:hover{opacity:.82}
+.btn-decline{padding:9px;background:transparent;color:var(--red);border:1px solid var(--red);border-radius:var(--r);font-family:var(--fb);font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .12s}
+.btn-decline:hover{background:var(--red);color:#fff}
+.reviewed-tag{font-size:11px;color:var(--muted);font-style:italic;text-align:center;padding:4px}
+
+/* STATES */
+.state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;gap:10px;color:var(--muted);text-align:center}
+.s-ico{font-size:30px}
+.s-ttl{font-family:var(--fd);font-size:20px;font-style:italic;color:var(--ink)}
+.s-msg{font-size:12px;max-width:260px;line-height:1.6}
+.spin{width:24px;height:24px;border:2px solid var(--br);border-top-color:var(--ink);border-radius:50%;animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.btn-ol{padding:9px 18px;background:transparent;border:1px solid var(--ink);border-radius:var(--r);color:var(--ink);font-family:var(--fb);font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .12s;margin-top:4px}
+.btn-ol:hover{background:var(--ink);color:#fff}
+
+/* TOAST */
+.toasts{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:999;display:flex;flex-direction:column;gap:7px;pointer-events:none}
+.toast{padding:9px 15px;border-radius:var(--r);font-size:11px;font-weight:500;border:1px solid;pointer-events:all;white-space:nowrap;animation:ti .2s ease}
+.t-ok{background:var(--bg);color:var(--green);border-color:var(--green)}
+.t-err{background:var(--bg);color:var(--red);border-color:var(--red)}
+.t-inf{background:var(--ink);color:#fff;border-color:var(--ink)}
+@keyframes ti{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+
+@media(max-width:540px){
+  .hdr,.fbar,.sec,.main,.admin-body,.admin-hdr{padding-left:14px;padding-right:14px}
+  .grid{grid-template-columns:1fr 1fr;gap:10px}
+  .cart-drawer{width:100vw;border-left:none}
+  .srch{width:100%}.srch-wrap{margin-left:0;width:100%}
+  .pay-toggle{grid-template-columns:1fr}
+}
+@media(max-width:360px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- ═══════ CUSTOMER VIEW ═══════ -->
+<div id="customerView">
+
+  <!-- HEADER -->
+  <header class="hdr">
+    <div class="hdr-brand">Gardenia <small>Event Decor · Dallas, TX</small></div>
+    <div class="hdr-right">
+      <div id="status"></div>
+      <button class="cart-btn" onclick="openCart()">
+        🛒 Cart <span class="cart-count hidden" id="cartCount">0</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- FILTERS -->
+  <div class="fbar">
+    <span class="flbl">Category:</span>
+    <button class="chip on" onclick="setCat('all',this)">All</button>
+    <div id="cats" style="display:contents"></div>
+    <div class="srch-wrap">
+      <span class="srch-ico">🔍</span>
+      <input class="srch" type="text" id="srch" placeholder="Search…" oninput="doSearch(this.value)">
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-t">Rental Collection</div>
+    <div class="sec-c" id="cnt"></div>
+  </div>
+
+  <!-- CATALOG -->
+  <main class="main">
+    <div class="state" id="sLoad"><div class="spin"></div><div class="s-ttl">Loading Collection</div></div>
+    <div class="grid" id="grid" style="display:none"></div>
+    <div class="state" id="sEmpty" style="display:none"><div class="s-ico">🌸</div><div class="s-ttl">No Items Found</div><div class="s-msg">Try adjusting your filters, or add products in Wix Stores.</div></div>
+    <div class="state" id="sErr" style="display:none"><div class="s-ico">⚠</div><div class="s-ttl">Connection Error</div><div class="s-msg" id="errMsg">Could not load products.</div><button class="btn-ol" onclick="load()" style="margin-top:8px">Retry</button></div>
+  </main>
+</div>
+
+<!-- ═══════ ADMIN VIEW ═══════ -->
+<div id="adminView" style="display:none">
+  <div class="admin-hdr">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="font-family:var(--fd);font-size:22px;font-style:italic">Gardenia</div>
+      <span class="admin-badge">Admin Dashboard</span>
+    </div>
+    <button class="btn-ol" onclick="exitAdmin()">← Back to Site</button>
+  </div>
+  <div class="admin-tabs">
+    <button class="admin-tab on" onclick="adminTab('pending',this)">Pending <span id="pendingCount"></span></button>
+    <button class="admin-tab" onclick="adminTab('approved',this)">Approved</button>
+    <button class="admin-tab" onclick="adminTab('declined',this)">Declined</button>
+    <button class="admin-tab" onclick="adminTab('all',this)">All Orders</button>
+  </div>
+  <div class="admin-body">
+    <div class="state" id="adminLoad"><div class="spin"></div><div class="s-ttl">Loading Orders</div></div>
+    <div class="orders-list" id="ordersList" style="display:none"></div>
+    <div class="state" id="adminEmpty" style="display:none"><div class="s-ico">📋</div><div class="s-ttl">No Orders</div><div class="s-msg">No orders in this category yet.</div></div>
+  </div>
+</div>
+
+<!-- ═══════ DATE PICKER MODAL ═══════ -->
+<div class="dp-overlay" id="dpOverlay" onclick="closeDpOv(event)">
+  <div class="dp-box" id="dpBox">
+    <div class="dp-head">
+      <div class="dp-item-name" id="dpItemName">Select Dates</div>
+      <button class="btn-x" onclick="closeDatePicker()">✕</button>
+    </div>
+    <div class="dp-body">
+      <div class="dp-instruction">Click a start date, then an end date</div>
+      <div class="cal-nav">
+        <button class="cal-arrow" onclick="dpChangeMonth(-1)">‹</button>
+        <span class="cal-m" id="dpCalHead"></span>
+        <button class="cal-arrow" onclick="dpChangeMonth(1)">›</button>
+      </div>
+      <div class="cal-grid" id="dpCalGrid"></div>
+      <div class="dp-dates">
+        <div class="dp-date-box"><div class="dp-date-lbl">Pick-Up Date</div><div class="dp-date-val empty" id="dpS">Select start</div></div>
+        <div class="dp-date-box"><div class="dp-date-lbl">Return Date</div><div class="dp-date-val empty" id="dpE">Select end</div></div>
+      </div>
+      <div class="dp-avail" id="dpAvail"></div>
+      <div class="dp-price" id="dpPrice" style="display:none">
+        <span>Estimated</span>
+        <span class="amt" id="dpPriceAmt"></span>
+      </div>
+      <div class="dp-actions">
+        <button class="btn-ghost" onclick="closeDatePicker()">Cancel</button>
+        <button class="btn-primary" id="dpConfirmBtn" disabled onclick="confirmDatePicker()">Add to Cart</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ CART DRAWER ═══════ -->
+<div class="cart-ov" id="cartOv" onclick="closeCartOv(event)">
+  <div class="cart-drawer">
+    <div class="cart-top">
+      <div class="cart-top-t">Your Rental Cart</div>
+      <button class="btn-x" onclick="closeCart()">✕</button>
+    </div>
+    <div class="cart-body" id="cartBody">
+      <div class="cart-empty">
+        <span class="cart-empty-ico">🛒</span>
+        <div class="cart-empty-t">Your cart is empty</div>
+        <div style="font-size:12px;color:var(--muted)">Browse our collection and add items to get started.</div>
+      </div>
+    </div>
+    <div class="cart-footer" id="cartFooter" style="display:none">
+      <div class="cart-avail-warn" id="cartAvailWarn">⚠ Some items have date conflicts. Please update dates before checking out.</div>
+      <div class="cart-totals" id="cartTotals"></div>
+      <div id="checkoutSection">
+        <div class="co-section">
+          <div class="co-title">Your Details</div>
+          <div class="row2">
+            <div class="row" style="margin-bottom:0"><label class="lbl">First Name</label><input class="inp" type="text" id="coFirst" placeholder="Jane"></div>
+            <div class="row" style="margin-bottom:0"><label class="lbl">Last Name</label><input class="inp" type="text" id="coLast" placeholder="Smith"></div>
+          </div>
+          <div class="row" style="margin-top:10px"><label class="lbl">Email</label><input class="inp" type="email" id="coEmail" placeholder="you@example.com"></div>
+          <div class="row"><label class="lbl">Phone</label><input class="inp" type="tel" id="coPhone" placeholder="+1 (214) 000-0000"></div>
+          <div class="row2">
+            <div class="row" style="margin-bottom:0"><label class="lbl">Event Date</label><input class="inp" type="date" id="coEventDate"></div>
+            <div class="row" style="margin-bottom:0"><label class="lbl">Event Type</label><input class="inp" type="text" id="coEventType" placeholder="Wedding, Quince…"></div>
+          </div>
+          <div class="row" style="margin-top:10px"><label class="lbl">Notes <span style="text-transform:none;font-weight:300;color:var(--dim)">(optional)</span></label><textarea class="ta" id="coNotes" placeholder="Venue, theme, special requirements…"></textarea></div>
+        </div>
+        <div class="co-section" style="margin-top:14px">
+          <div class="co-title">Payment Option</div>
+          <div class="pay-toggle" id="payToggle">
+            <div class="pay-opt on" id="payDeposit" onclick="selectPay('deposit')">
+              <div class="pay-opt-rb"></div>
+              <div class="pay-opt-title">Pay Deposit</div>
+              <div class="pay-opt-amt" id="depositAmt">—</div>
+              <div class="pay-opt-note">30% to confirm your dates</div>
+            </div>
+            <div class="pay-opt" id="payFull" onclick="selectPay('full')">
+              <div class="pay-opt-rb"></div>
+              <div class="pay-opt-title">Pay in Full</div>
+              <div class="pay-opt-amt" id="fullAmt">—</div>
+              <div class="pay-opt-note">Total rental amount</div>
+            </div>
+          </div>
+        </div>
+        <button class="btn-primary" id="submitBtn" onclick="submitOrder()">Submit Rental Request</button>
+        <p class="form-note">Gardenia will review &amp; confirm within 24 hours. Payment collected after approval.</p>
+      </div>
+      <div id="orderSuccessSection" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toasts" id="toasts"></div>
+
+<script>
+// ── CONFIG ──────────────────────────────────────────────────────
+const BASE         = 'https://www.gardeniaeventdecor.com';
+const PRODUCTS_URL = BASE + '/_functions/rentalProducts';
+const AVAIL_URL    = BASE + '/_functions/checkAvailability';
+const ORDER_URL    = BASE + '/_functions/submitOrder';
+const ADMIN_URL    = BASE + '/_functions/adminOrders';
+const REVIEW_URL   = BASE + '/_functions/reviewOrder';
+const ADMIN_KEY    = 'GardeniaAdmin2024'; // must match backend
+const DEPOSIT_PCT  = 0.30;
+
+// ── STATE ────────────────────────────────────────────────────────
+let allItems=[], filteredItems=[], activeCat='all';
+let cart = []; // [{itemId, title, image, price, qty, startDate, endDate, days, available}]
+let dpItem=null, dpStart=null, dpEnd=null, dpPicking='start', dpYear, dpMonth;
+let selectedPay = 'deposit';
+let adminOrders = [], adminFilter = 'pending';
+
+// ── INIT ─────────────────────────────────────────────────────────
+(function(){
+  const p = new URLSearchParams(window.location.search);
+  const mode = p.get('mode');
+  const key  = p.get('key');
+
+  if(mode === 'admin' && key === ADMIN_KEY){
+    document.getElementById('customerView').style.display = 'none';
+    document.getElementById('adminView').style.display = 'block';
+    loadAdminOrders();
+  } else {
+    load();
+  }
+
+  window.addEventListener('message', e => {
+    if(e.data?.type === 'RENTAL_FILTER'){
+      if(e.data.category) setCat(e.data.category, null);
+      if(e.data.search !== undefined) doSearch(e.data.search);
+    }
+  });
+})();
+
+function toP(d){try{window.parent.postMessage(d,'*')}catch(e){}}
+function setStatus(m,c){const el=document.getElementById('status');el.textContent=m;el.style.color=c||'#bbb'}
+
+// ── LOAD PRODUCTS ────────────────────────────────────────────────
+async function load(){
+  show('load'); setStatus('Connecting…');
+  try{
+    const r = await fetch(PRODUCTS_URL);
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const d = await r.json();
+    allItems = d.items || [];
+    if(!allItems.length){ show('empty'); setStatus('0 items'); return; }
+    buildCats(); applyFilter(); show('grid');
+    setStatus(allItems.length+' items');
+    document.getElementById('cnt').textContent = allItems.length+' items available';
+    toP({type:'RENTAL_ITEMS_LOADED', count:allItems.length});
+    setTimeout(()=>toP({type:'RENTAL_HEIGHT',height:document.body.scrollHeight}),100);
+  }catch(e){
+    document.getElementById('errMsg').textContent = e.message || 'Failed to connect.';
+    show('err'); setStatus('Error','#943030');
+  }
+}
+function show(s){
+  document.getElementById('sLoad').style.display  = s==='load' ?'flex':'none';
+  document.getElementById('grid').style.display   = s==='grid' ?'grid':'none';
+  document.getElementById('sEmpty').style.display = s==='empty'?'flex':'none';
+  document.getElementById('sErr').style.display   = s==='err'  ?'flex':'none';
+}
+
+// ── FILTERS ──────────────────────────────────────────────────────
+function buildCats(){
+  const cs=[...new Set(allItems.map(i=>i.category).filter(Boolean))];
+  document.getElementById('cats').innerHTML=cs.map(c=>`<button class="chip" onclick="setCat('${c}',this)">${c}</button>`).join('');
+}
+function setCat(c,btn){
+  activeCat=c;
+  document.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));
+  if(btn)btn.classList.add('on');
+  applyFilter();
+}
+function doSearch(q){applyFilter(q);}
+function applyFilter(ov){
+  const q=(ov!==undefined?ov:document.getElementById('srch').value).toLowerCase();
+  filteredItems=allItems.filter(i=>(activeCat==='all'||i.category===activeCat)&&(!q||[i.title,i.description,i.category].some(f=>f?.toLowerCase().includes(q))));
+  filteredItems.length?(renderGrid(),show('grid')):show('empty');
+  setTimeout(()=>toP({type:'RENTAL_HEIGHT',height:document.body.scrollHeight}),50);
+}
+
+// ── RENDER CATALOG ───────────────────────────────────────────────
+function renderGrid(){
+  document.getElementById('grid').innerHTML = filteredItems.map(item=>{
+    const inCart = cart.some(c=>c.itemId===item.id);
+    const av = item.available !== false;
+    return`<div class="card" id="card-${item.id}">
+      <div class="img-wrap" onclick="openDatePicker('${item.id}')">
+        ${item.image ? `<img class="c-img" src="${item.image}" alt="${esc(item.title)}" loading="lazy" onerror="this.parentNode.innerHTML='<div class=&quot;c-ph&quot;>🌸</div>'">`:`<div class="c-ph">🌸</div>`}
+        <span class="c-badge ${av?'b-yes':'b-no'}">${av?'Available':'Unavailable'}</span>
+      </div>
+      <div class="c-body">
+        ${item.category?`<div class="c-cat">${item.category}</div>`:''}
+        <div class="c-name" onclick="openDatePicker('${item.id}')">${item.title||'Untitled'}</div>
+        <div class="c-desc">${stripHtml(item.description||'')}</div>
+        <div class="c-price">$${Number(item.price).toFixed(0)}<span class="c-price-unit"> / day</span></div>
+        <button class="btn-add ${inCart?'in-cart':''}" ${!av?'disabled':''} onclick="openDatePicker('${item.id}')">
+          ${inCart?'✓ In Cart':'+ Add to Cart'}
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function esc(s){return(s||'').replace(/"/g,'&quot;')}
+function stripHtml(h){const t=document.createElement('div');t.innerHTML=h;return t.textContent||''}
+
+// ── DATE PICKER ──────────────────────────────────────────────────
+function openDatePicker(itemId){
+  dpItem = allItems.find(i=>i.id===itemId);
+  if(!dpItem) return;
+  const existing = cart.find(c=>c.itemId===itemId);
+  dpStart = existing ? new Date(existing.startDate+'T00:00:00') : null;
+  dpEnd   = existing ? new Date(existing.endDate+'T00:00:00')   : null;
+  dpPicking = 'start';
+  const now = new Date();
+  dpYear = now.getFullYear(); dpMonth = now.getMonth();
+  document.getElementById('dpItemName').textContent = dpItem.title;
+  document.getElementById('dpConfirmBtn').disabled = true;
+  document.getElementById('dpAvail').style.display = 'none';
+  document.getElementById('dpPrice').style.display = 'none';
+  renderDpCal(); updateDpDates();
+  document.getElementById('dpOverlay').classList.add('on');
+}
+function closeDatePicker(){ document.getElementById('dpOverlay').classList.remove('on'); dpItem=null; }
+function closeDpOv(e){ if(e.target===document.getElementById('dpOverlay')) closeDatePicker(); }
+
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DOWS=['Su','Mo','Tu','We','Th','Fr','Sa'];
+
+function renderDpCal(){
+  const now=new Date(); now.setHours(0,0,0,0);
+  const fd=new Date(dpYear,dpMonth,1).getDay();
+  const dim=new Date(dpYear,dpMonth+1,0).getDate();
+  document.getElementById('dpCalHead').textContent=MONTHS[dpMonth]+' '+dpYear;
+  let h=DOWS.map(d=>`<div class="dow">${d}</div>`).join('');
+  for(let i=0;i<fd;i++) h+=`<div class="day empty"></div>`;
+  for(let d=1;d<=dim;d++){
+    const date=new Date(dpYear,dpMonth,d);
+    const ds=dStr(date);
+    const past=date<now;
+    const isS=dpStart&&ds===dStr(dpStart);
+    const isE=dpEnd&&ds===dStr(dpEnd);
+    const inR=dpStart&&dpEnd&&date>dpStart&&date<dpEnd;
+    const isT=ds===dStr(now);
+    let cls='day';
+    if(past)cls+=' past';
+    if(isS)cls+=' sel-s';
+    if(isE)cls+=' sel-e';
+    if(inR)cls+=' in-rng';
+    if(isT)cls+=' today';
+    h+=`<div class="${cls}" onclick="dpPickDay('${ds}')">${d}</div>`;
+  }
+  document.getElementById('dpCalGrid').innerHTML=h;
+}
+function dpChangeMonth(d){ dpMonth+=d; if(dpMonth<0){dpMonth=11;dpYear--;} if(dpMonth>11){dpMonth=0;dpYear++;} renderDpCal(); }
+
+function dpPickDay(ds){
+  const date=new Date(ds+'T00:00:00');
+  if(dpPicking==='start'||(!dpStart)||(dpStart&&dpEnd)){ dpStart=date; dpEnd=null; dpPicking='end'; }
+  else{ if(date<=dpStart){dpStart=date;dpEnd=null;dpPicking='end';}else{dpEnd=date;dpPicking='start';} }
+  renderDpCal(); updateDpDates();
+  if(dpStart&&dpEnd) checkDpAvailability();
+}
+
+function updateDpDates(){
+  const se=document.getElementById('dpS'), ee=document.getElementById('dpE');
+  se.textContent=dpStart?fmtDate(dpStart):'Select start date'; se.className='dp-date-val'+(dpStart?'':' empty');
+  ee.textContent=dpEnd?fmtDate(dpEnd):'Select end date'; ee.className='dp-date-val'+(dpEnd?'':' empty');
+  document.getElementById('dpPrice').style.display='none';
+  if(!dpStart||!dpEnd){ document.getElementById('dpAvail').style.display='none'; document.getElementById('dpConfirmBtn').disabled=true; }
+}
+
+async function checkDpAvailability(){
+  const avEl=document.getElementById('dpAvail');
+  const btn=document.getElementById('dpConfirmBtn');
+  avEl.className='dp-avail'; avEl.textContent='Checking availability…'; avEl.style.display='block'; btn.disabled=true;
+  try{
+    const r=await fetch(AVAIL_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({checks:[{itemId:dpItem.id,startDate:dStr(dpStart),endDate:dStr(dpEnd)}]})});
+    const d=await r.json();
+    const avail=d.available?.[dpItem.id]!==false;
+    if(avail){
+      avEl.className='dp-avail ok'; avEl.textContent='✓ Available for your selected dates';
+      btn.disabled=false;
+      const days=Math.max(1,Math.round((dpEnd-dpStart)/86400000));
+      const tot=dpItem.price*days;
+      document.getElementById('dpPriceAmt').textContent=`$${tot.toFixed(2)}`;
+      document.getElementById('dpPrice').style.display='flex';
+    }else{
+      avEl.className='dp-avail na'; avEl.textContent='✗ Not available for these dates — please choose different dates';
+      btn.disabled=true;
+      document.getElementById('dpPrice').style.display='none';
+    }
+  }catch(e){
+    avEl.className='dp-avail ok'; avEl.textContent='Availability could not be confirmed — you may still add to cart';
+    btn.disabled=false;
+  }
+}
+
+function confirmDatePicker(){
+  if(!dpItem||!dpStart||!dpEnd) return;
+  const days=Math.max(1,Math.round((dpEnd-dpStart)/86400000));
+  const existing=cart.findIndex(c=>c.itemId===dpItem.id);
+  const entry={itemId:dpItem.id,title:dpItem.title,image:dpItem.image||'',price:dpItem.price,qty:1,startDate:dStr(dpStart),endDate:dStr(dpEnd),days,available:true};
+  if(existing>=0) cart[existing]={...cart[existing],...entry};
+  else cart.push(entry);
+  closeDatePicker(); updateCartUI(); renderGrid();
+  toast(`${dpItem.title} added to cart`,'ok');
+}
+
+// ── CART ─────────────────────────────────────────────────────────
+function openCart(){ document.getElementById('cartOv').classList.add('on'); renderCart(); }
+function closeCart(){ document.getElementById('cartOv').classList.remove('on'); }
+function closeCartOv(e){ if(e.target===document.getElementById('cartOv')) closeCart(); }
+
+function updateCartUI(){
+  const n=cart.reduce((s,i)=>s+i.qty,0);
+  const el=document.getElementById('cartCount');
+  el.textContent=n; el.className=n?'cart-count':'cart-count hidden';
+}
+
+function removeCartItem(itemId){ cart=cart.filter(c=>c.itemId!==itemId); updateCartUI(); renderCart(); renderGrid(); }
+function changeQty(itemId,d){ const i=cart.find(c=>c.itemId===itemId); if(!i)return; i.qty=Math.max(1,i.qty+d); updateCartUI(); renderCart(); }
+
+function renderCart(){
+  const body=document.getElementById('cartBody');
+  const footer=document.getElementById('cartFooter');
+  if(!cart.length){
+    body.innerHTML=`<div class="cart-empty"><span class="cart-empty-ico">🛒</span><div class="cart-empty-t">Your cart is empty</div><div style="font-size:12px;color:var(--muted)">Browse the collection and add items to get started.</div></div>`;
+    footer.style.display='none'; return;
+  }
+  body.innerHTML=cart.map(item=>`
+    <div class="ci">
+      ${item.image?`<img class="ci-img" src="${item.image}" alt="${esc(item.title)}">`:`<div class="ci-img-ph">🌸</div>`}
+      <div class="ci-info">
+        <div class="ci-name">${item.title}</div>
+        <div class="ci-dates">
+          <span class="avail-dot ${item.available===false?'na':'ok'}"></span>
+          ${item.startDate} → ${item.endDate} · ${item.days} day${item.days!==1?'s':''}
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px">
+          <div class="ci-qty">
+            <button class="ci-qty-btn" onclick="changeQty('${item.itemId}',-1)">−</button>
+            <span class="ci-qty-n">${item.qty}</span>
+            <button class="ci-qty-btn" onclick="changeQty('${item.itemId}',1)">+</button>
+          </div>
+          <span class="ci-remove" onclick="removeCartItem('${item.itemId}')">Remove</span>
+        </div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px;cursor:pointer;text-decoration:underline" onclick="editDates('${item.itemId}')">Edit dates</div>
+      </div>
+      <div>
+        <div class="ci-price">$${(item.price*item.qty*item.days).toFixed(2)}</div>
+        <div style="font-size:9px;color:var(--dim);text-align:right">$${item.price}/day</div>
+      </div>
+    </div>`).join('');
+
+  footer.style.display='block';
+  renderCartTotals();
+
+  // Check all items availability in background
+  checkAllAvailability();
+}
+
+function editDates(itemId){
+  closeCart();
+  setTimeout(()=>openDatePicker(itemId),300);
+}
+
+function renderCartTotals(){
+  const subtotal=cart.reduce((s,i)=>s+i.price*i.qty*i.days,0);
+  const deposit=subtotal*DEPOSIT_PCT;
+  document.getElementById('depositAmt').textContent='$'+deposit.toFixed(2);
+  document.getElementById('fullAmt').textContent='$'+subtotal.toFixed(2);
+  document.getElementById('cartTotals').innerHTML=`
+    <div class="ct-row"><span>Items (${cart.length})</span><span>—</span></div>
+    <div class="ct-row"><span>Rental Duration</span><span>varies</span></div>
+    <div class="ct-row tot"><span>Subtotal</span><span class="amt">$${subtotal.toFixed(2)}</span></div>
+    <div class="ct-row dep"><span>Deposit Required (30%)</span><span>$${deposit.toFixed(2)}</span></div>`;
+}
+
+async function checkAllAvailability(){
+  if(!cart.length) return;
+  try{
+    const checks=cart.map(i=>({itemId:i.itemId,startDate:i.startDate,endDate:i.endDate}));
+    const r=await fetch(AVAIL_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({checks})});
+    const d=await r.json();
+    let hasConflict=false;
+    cart.forEach(i=>{
+      i.available=d.available?.[i.itemId]!==false;
+      if(!i.available) hasConflict=true;
+    });
+    const warn=document.getElementById('cartAvailWarn');
+    warn.style.display=hasConflict?'block':'none';
+    // Refresh dots
+    renderCart();
+  }catch(e){}
+}
+
+function selectPay(type){
+  selectedPay=type;
+  document.getElementById('payDeposit').className='pay-opt'+(type==='deposit'?' on':'');
+  document.getElementById('payFull').className='pay-opt'+(type==='full'?' on':'');
+}
+
+// ── SUBMIT ORDER ─────────────────────────────────────────────────
+async function submitOrder(){
+  const first=document.getElementById('coFirst').value.trim();
+  const last=document.getElementById('coLast').value.trim();
+  const email=document.getElementById('coEmail').value.trim();
+  const phone=document.getElementById('coPhone').value.trim();
+  const eventDate=document.getElementById('coEventDate').value;
+  const eventType=document.getElementById('coEventType').value.trim();
+  const notes=document.getElementById('coNotes').value.trim();
+  if(!first||!last){toast('Please enter your name','err');return;}
+  if(!email||!/\S+@\S+\.\S+/.test(email)){toast('Please enter a valid email','err');return;}
+  if(!cart.length){toast('Your cart is empty','err');return;}
+
+  const btn=document.getElementById('submitBtn');
+  btn.disabled=true; btn.textContent='Submitting…';
+
+  const subtotal=cart.reduce((s,i)=>s+i.price*i.qty*i.days,0);
+  const items=cart.map(i=>({itemId:i.itemId,title:i.title,qty:i.qty,price:i.price,days:i.days,startDate:i.startDate,endDate:i.endDate}));
+
+  try{
+    const r=await fetch(ORDER_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({customerFirst:first,customerLast:last,customerEmail:email,customerPhone:phone,eventDate,eventType,items,subtotal,paymentType:selectedPay,notes})});
+    const d=await r.json();
+    if(!r.ok||d.error) throw new Error(d.error||'HTTP '+r.status);
+    cart=[]; updateCartUI();
+    showOrderSuccess(d.ref, email, subtotal, selectedPay);
+    toP({type:'RENTAL_ORDER_SUBMITTED',ref:d.ref,email,total:subtotal});
+  }catch(e){
+    toast('Submission failed: '+(e.message||'Please try again'),'err');
+    btn.disabled=false; btn.textContent='Submit Rental Request';
+  }
+}
+
+function showOrderSuccess(ref, email, subtotal, payType){
+  const deposit=subtotal*DEPOSIT_PCT;
+  const amtDue=payType==='deposit'?deposit:subtotal;
+  document.getElementById('checkoutSection').style.display='none';
+  document.getElementById('cartTotals').style.display='none';
+  document.getElementById('cartAvailWarn').style.display='none';
+  document.getElementById('orderSuccessSection').style.display='block';
+  document.getElementById('orderSuccessSection').innerHTML=`
+    <div class="success-view">
+      <div class="suc-ico">🌸</div>
+      <div class="suc-ttl">Request Received!</div>
+      <div class="suc-msg">Your rental request has been sent to Gardenia. You'll hear back within 24 hours at <strong>${email}</strong>.</div>
+      <div class="suc-ref">${ref}</div>
+      <div class="suc-next">
+        <div class="suc-next-t">What happens next</div>
+        <div class="suc-step"><span>1.</span> Gardenia reviews your request &amp; checks availability</div>
+        <div class="suc-step"><span>2.</span> You receive an email with approval or alternatives</div>
+        <div class="suc-step"><span>3.</span> If approved, you pay ${payType==='deposit'?`your 30% deposit ($${deposit.toFixed(2)})`:`in full ($${subtotal.toFixed(2)})`} to confirm</div>
+        <div class="suc-step"><span>4.</span> Your rental dates are locked in — enjoy your event! 🎉</div>
+      </div>
+      <button class="btn-ol" onclick="closeCart();renderGrid()">Continue Browsing</button>
+    </div>`;
+}
+
+// ── ADMIN DASHBOARD ───────────────────────────────────────────────
+function exitAdmin(){
+  document.getElementById('adminView').style.display='none';
+  document.getElementById('customerView').style.display='block';
+}
+
+async function loadAdminOrders(){
+  document.getElementById('adminLoad').style.display='flex';
+  document.getElementById('ordersList').style.display='none';
+  document.getElementById('adminEmpty').style.display='none';
+  try{
+    const r=await fetch(`${ADMIN_URL}?key=${ADMIN_KEY}`);
+    const d=await r.json();
+    if(d.error) throw new Error(d.error);
+    adminOrders=d.orders||[];
+    const pending=adminOrders.filter(o=>o.status==='pending').length;
+    document.getElementById('pendingCount').textContent=pending?`(${pending})`:'';
+    renderAdminOrders();
+  }catch(e){
+    document.getElementById('adminLoad').style.display='none';
+    toast('Could not load orders: '+e.message,'err');
+  }
+}
+
+function adminTab(filter, btn){
+  adminFilter=filter;
+  document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('on'));
+  btn.classList.add('on');
+  renderAdminOrders();
+}
+
+function renderAdminOrders(){
+  document.getElementById('adminLoad').style.display='none';
+  const filtered=adminFilter==='all'?adminOrders:adminOrders.filter(o=>o.status===adminFilter);
+  if(!filtered.length){ document.getElementById('ordersList').style.display='none'; document.getElementById('adminEmpty').style.display='flex'; return; }
+  document.getElementById('adminEmpty').style.display='none';
+  document.getElementById('ordersList').style.display='flex';
+  document.getElementById('ordersList').innerHTML=filtered.map(o=>renderOrderCard(o)).join('');
+}
+
+function renderOrderCard(o){
+  const itemRows=(o.items||[]).map(i=>`
+    <div class="oc-item-row">
+      <div><div class="oc-item-name">${i.title}</div><div class="oc-item-detail">${i.startDate} → ${i.endDate} · ×${i.qty} · ${i.days} day${i.days!==1?'s':''}</div></div>
+      <div style="font-family:var(--fd);font-size:14px">$${(i.price*i.qty*i.days).toFixed(2)}</div>
+    </div>`).join('');
+  const deposit=(o.subtotal*DEPOSIT_PCT).toFixed(2);
+  const reviewed=o.status!=='pending';
+  return`<div class="order-card">
+    <div class="oc-head" onclick="toggleOrder('${o.id}')">
+      <div>
+        <div class="oc-ref">${o.ref}</div>
+        <div class="oc-customer">${o.customer} · ${o.email}</div>
+        <div class="oc-meta">${o.eventType||'Event'}${o.eventDate?' · '+o.eventDate:''} · Submitted ${fmtDateStr(o.submittedAt)}</div>
+      </div>
+      <span class="oc-status s-${o.status}">${o.status}</span>
+    </div>
+    <div class="oc-body" id="oc-${o.id}">
+      <div class="oc-items">${itemRows}</div>
+      <div class="oc-financials">
+        <div class="oc-fin-row"><span>Subtotal</span><span>$${o.subtotal?.toFixed(2)}</span></div>
+        <div class="oc-fin-row"><span>Payment Type</span><span>${o.paymentType==='deposit'?`Deposit ($${deposit})`:'Full Payment'}</span></div>
+        <div class="oc-fin-row tot"><span>Amount Due</span><span class="f-amt">$${o.paymentType==='deposit'?deposit:o.subtotal?.toFixed(2)}</span></div>
+      </div>
+      ${o.phone?`<div style="font-size:11px;color:var(--muted);margin-bottom:10px">📞 ${o.phone}</div>`:''}
+      ${o.adminNotes&&reviewed?`<div style="font-size:11px;color:var(--muted);margin-bottom:10px;font-style:italic">Note: ${o.adminNotes}</div>`:''}
+      <div class="review-box">
+        <div class="review-box-t">${reviewed?'Decision':'Review This Order'}</div>
+        ${reviewed
+          ? `<div class="reviewed-tag">Order ${o.status} on ${fmtDateStr(o.reviewedAt)}</div>`
+          : `<textarea class="admin-note-inp" id="note-${o.id}" placeholder="Add a note for the customer (optional)…"></textarea>
+             <div class="review-btns">
+               <button class="btn-approve" onclick="reviewOrder('${o.id}','approve')">✓ Approve</button>
+               <button class="btn-decline" onclick="reviewOrder('${o.id}','decline')">✗ Decline</button>
+             </div>`
+        }
+      </div>
+    </div>
+  </div>`;
+}
+
+function toggleOrder(id){
+  const el=document.getElementById('oc-'+id);
+  el.classList.toggle('open');
+}
+
+async function reviewOrder(orderId, action){
+  const noteEl=document.getElementById('note-'+orderId);
+  const notes=noteEl?noteEl.value.trim():'';
+  try{
+    const r=await fetch(REVIEW_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:ADMIN_KEY,orderId,action,notes})});
+    const d=await r.json();
+    if(d.error) throw new Error(d.error);
+    toast(`Order ${action==='approve'?'approved':'declined'} — customer notified`,'ok');
+    await loadAdminOrders();
+  }catch(e){
+    toast('Error: '+e.message,'err');
+  }
+}
+
+// ── UTILS ─────────────────────────────────────────────────────────
+function dStr(d){return d.toISOString().split('T')[0];}
+function fmtDate(d){return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
+function fmtDateStr(s){if(!s)return'—';try{return new Date(s).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}catch(e){return s;}}
+
+function toast(msg,type='inf',dur=4000){
+  const c=document.getElementById('toasts'),t=document.createElement('div');
+  t.className='toast t-'+(type==='ok'?'ok':type==='err'?'err':'inf');
+  t.textContent=msg; c.appendChild(t);
+  setTimeout(()=>{t.style.transition='opacity .25s';t.style.opacity='0';setTimeout(()=>t.remove(),300);},dur);
+}
+</script>
+</body>
+</html>

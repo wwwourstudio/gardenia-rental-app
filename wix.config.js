@@ -78,7 +78,7 @@ export default {
       {
         pageId: 'rental-quote',
         pageName: 'Rental Quote',
-        src: 'src/pages/rental-quote.tsx',
+        src: 'src/wix-pages/rental-quote.tsx',
       },
     ],
   },

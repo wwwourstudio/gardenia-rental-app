@@ -1,13 +1,13 @@
 // ═══════════════════════════════════════════════════════════════
-// RENTAL QUOTE PAGE — src/pages/rental-quote.tsx
+// RENTAL QUOTE PAGE — src/wix-pages/rental-quote.tsx
 // 5-step customer-facing rental quote form.
 // Wix CLI page — deployed via: npx @wix/cli@latest deploy
 // ═══════════════════════════════════════════════════════════════
 
 import { useState, useEffect } from 'react';
-import { getRentalItems, createRentalBooking } from '../../backend/rentals.web';
+import { getRentalItems, createRentalBooking } from '../backend/rentals.web';
 import type { RentalItem } from '../dashboard/pages/schema';
-import type { BookingFormData, BookingResult } from '../../backend/rentals.web';
+import type { BookingFormData, BookingResult } from '../backend/rentals.web';
 
 // ── Design tokens ──────────────────────────────────────────────
 const P = {

@@ -16,7 +16,11 @@
 import { getRentalItems, createRentalBooking } from 'backend/rentals';
 
 $w.onReady(function () {
-  $w('#rentalQuoteEmbed').onMessage(async (event) => {
+  // Cast to HtmlComponent so Wix's type checker doesn't complain
+  // about postMessage not existing on Section/Box types.
+  const embed = /** @type {$w.HtmlComponent} */ ($w('#rentalQuoteEmbed'));
+
+  embed.onMessage(async (event) => {
     const msg = typeof event.data === 'string'
       ? JSON.parse(event.data)
       : event.data;
@@ -25,7 +29,7 @@ $w.onReady(function () {
     if (msg.type === 'ready') {
       try {
         const items = await getRentalItems();
-        $w('#rentalQuoteEmbed').postMessage({ type: 'items', data: items });
+        embed.postMessage({ type: 'items', data: items });
       } catch (e) {
         console.error('Failed to load rental items:', e);
       }
@@ -35,12 +39,12 @@ $w.onReady(function () {
     if (msg.type === 'submit') {
       try {
         const result = await createRentalBooking(msg.data);
-        $w('#rentalQuoteEmbed').postMessage({
+        embed.postMessage({
           type: 'success',
           confirmationRef: result.confirmationRef,
         });
       } catch (e) {
-        $w('#rentalQuoteEmbed').postMessage({
+        embed.postMessage({
           type: 'error',
           message: e.message || 'Submission failed. Please try again.',
         });

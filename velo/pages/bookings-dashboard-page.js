@@ -16,7 +16,11 @@
 import { getBookings, updateBookingStatus } from 'backend/rentals';
 
 $w.onReady(function () {
-  $w('#dashboardEmbed').onMessage(async (event) => {
+  // Cast to HtmlComponent so Wix's type checker doesn't complain
+  // about postMessage not existing on Section/Box types.
+  const embed = /** @type {$w.HtmlComponent} */ ($w('#dashboardEmbed'));
+
+  embed.onMessage(async (event) => {
     const msg = typeof event.data === 'string'
       ? JSON.parse(event.data)
       : event.data;
@@ -25,7 +29,7 @@ $w.onReady(function () {
     if (msg.type === 'ready' || msg.type === 'refresh') {
       try {
         const bookings = await getBookings();
-        $w('#dashboardEmbed').postMessage({ type: 'bookings', data: bookings });
+        embed.postMessage({ type: 'bookings', data: bookings });
       } catch (e) {
         console.error('Failed to load bookings:', e);
       }
@@ -35,7 +39,7 @@ $w.onReady(function () {
     if (msg.type === 'updateStatus') {
       try {
         await updateBookingStatus(msg.bookingId, msg.status);
-        $w('#dashboardEmbed').postMessage({
+        embed.postMessage({
           type: 'statusUpdated',
           bookingId: msg.bookingId,
           status: msg.status,

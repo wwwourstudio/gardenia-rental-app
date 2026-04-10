@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!--
+  HOW TO INSTALL:
+  1. Create a new page in Wix: "Bookings Dashboard"
+  2. Set page permissions to "Password" or "Members Only"
+  3. Add an HTML iFrame element (Add Panel → Embed → HTML iFrame)
+  4. Click element → Edit Code → paste this entire file
+  5. Stretch element to fill the page (set height 1000px+, width 100%)
+  6. Name the element #dashboardEmbed in the Properties panel
+  7. Paste bookings-dashboard-page.js into the page code panel
+-->
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --green:       #4a7c59;
+  --green-light: #e8f0eb;
+  --cream:       #f9f5ef;
+  --gold:        #8b7355;
+  --border:      #d4c9b8;
+  --text:        #2c2c2c;
+  --muted:       #7a7a7a;
+  --radius:      8px;
+}
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  background: var(--cream);
+  color: var(--text);
+  padding: 24px 20px;
+  min-height: 100vh;
+}
+
+/* ── Header ──────────────────────────────── */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.header-title {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 22px;
+  color: var(--green);
+}
+.header-sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+/* ── Stat cards ──────────────────────────── */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.stat-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+}
+.stat-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.stat-value {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text);
+}
+.stat-card.green .stat-value { color: var(--green); }
+
+/* ── Filter pills ────────────────────────── */
+.filters {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.pill {
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  cursor: pointer;
+  border: 1.5px solid var(--border);
+  background: #fff;
+  color: var(--text);
+  transition: all 0.15s;
+}
+.pill.active {
+  background: var(--green);
+  color: #fff;
+  border-color: var(--green);
+}
+
+/* ── Table ───────────────────────────────── */
+.table-wrap {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  overflow-x: auto;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 640px;
+}
+thead {
+  background: #f5f2ed;
+}
+th {
+  text-align: left;
+  padding: 11px 14px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted);
+  font-weight: 600;
+  white-space: nowrap;
+}
+td {
+  padding: 13px 14px;
+  font-size: 14px;
+  border-top: 1px solid var(--border);
+  vertical-align: middle;
+}
+tr:hover td { background: #faf8f4; }
+
+/* ── Status badge ────────────────────────── */
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+.badge-pending   { background: #fef3e2; color: #d48806; }
+.badge-confirmed { background: var(--green-light); color: var(--green); }
+.badge-completed { background: #f0f0f0; color: #555; }
+.badge-cancelled { background: #fff0f0; color: #c0392b; }
+
+/* ── Action buttons ──────────────────────── */
+.actions { display: flex; gap: 6px; }
+.act-btn {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1.5px solid var(--border);
+  background: #fff;
+  color: var(--text);
+  white-space: nowrap;
+  transition: all 0.12s;
+}
+.act-btn:hover { border-color: var(--green); color: var(--green); }
+.act-btn.danger:hover { border-color: #c0392b; color: #c0392b; }
+.act-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── Empty / loading ─────────────────────── */
+.empty {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--muted);
+  font-size: 14px;
+}
+.spinner {
+  width: 32px; height: 32px;
+  border: 3px solid var(--border);
+  border-top-color: var(--green);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  margin: 0 auto 12px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Detail drawer (expandable row) ─────── */
+.detail-row td {
+  background: #f9f7f3;
+  padding: 12px 14px;
+  font-size: 13px;
+}
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+.detail-item strong {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-title">Bookings Dashboard</div>
+    <div class="header-sub" id="lastUpdated">Loading…</div>
+  </div>
+  <button class="pill" onclick="requestRefresh()" style="border-color:var(--green);color:var(--green);">
+    ↺ Refresh
+  </button>
+</div>
+
+<!-- Stats -->
+<div class="stats">
+  <div class="stat-card">
+    <div class="stat-label">Total Quotes</div>
+    <div class="stat-value" id="sTotal">—</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Pending</div>
+    <div class="stat-value" id="sPending">—</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Confirmed</div>
+    <div class="stat-value" id="sConfirmed">—</div>
+  </div>
+  <div class="stat-card green">
+    <div class="stat-label">Total Revenue</div>
+    <div class="stat-value" id="sRevenue">—</div>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="filters">
+  <div class="pill active" id="pill-all"       onclick="filter('all')">All</div>
+  <div class="pill"        id="pill-pending"   onclick="filter('pending')">Pending</div>
+  <div class="pill"        id="pill-confirmed" onclick="filter('confirmed')">Confirmed</div>
+  <div class="pill"        id="pill-completed" onclick="filter('completed')">Completed</div>
+  <div class="pill"        id="pill-cancelled" onclick="filter('cancelled')">Cancelled</div>
+</div>
+
+<!-- Table -->
+<div class="table-wrap">
+  <table id="bookingsTable">
+    <thead>
+      <tr>
+        <th>Ref</th>
+        <th>Customer</th>
+        <th>Event Date</th>
+        <th>Items</th>
+        <th>Total</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody">
+      <tr>
+        <td colspan="7">
+          <div class="empty">
+            <div class="spinner"></div>
+            Loading bookings…
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<script>
+// ── State ───────────────────────────────────────────────────────
+let allBookings = [];
+let activeFilter = 'all';
+let expandedId = null;
+
+// ── Boot ────────────────────────────────────────────────────────
+window.parent.postMessage(JSON.stringify({ type: 'ready' }), '*');
+
+// ── Message handler (receives data from Wix page code) ──────────
+window.addEventListener('message', function (e) {
+  let msg;
+  try { msg = typeof e.data === 'string' ? JSON.parse(e.data) : e.data; }
+  catch { return; }
+
+  if (msg.type === 'bookings') {
+    allBookings = msg.data || [];
+    renderStats();
+    renderTable(activeFilter);
+    document.getElementById('lastUpdated').textContent =
+      'Updated ' + new Date().toLocaleTimeString();
+  }
+
+  if (msg.type === 'statusUpdated') {
+    // Optimistically update local state
+    const b = allBookings.find(b => b._id === msg.bookingId);
+    if (b) b.status = msg.status;
+    renderStats();
+    renderTable(activeFilter);
+  }
+});
+
+// ── Stats ────────────────────────────────────────────────────────
+function renderStats() {
+  const pending   = allBookings.filter(b => b.status === 'pending').length;
+  const confirmed = allBookings.filter(b => b.status === 'confirmed').length;
+  const revenue   = allBookings
+    .filter(b => b.status !== 'cancelled')
+    .reduce((s, b) => s + (b.totalPrice || 0), 0);
+
+  document.getElementById('sTotal').textContent     = allBookings.length;
+  document.getElementById('sPending').textContent   = pending;
+  document.getElementById('sConfirmed').textContent = confirmed;
+  document.getElementById('sRevenue').textContent   = '$' + revenue.toLocaleString();
+}
+
+// ── Table ────────────────────────────────────────────────────────
+function renderTable(f) {
+  const list = f === 'all' ? allBookings : allBookings.filter(b => b.status === f);
+  const tbody = document.getElementById('tableBody');
+
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty">No bookings found.</div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = list.map(b => {
+    const isExpanded = expandedId === b._id;
+    const itemCount  = safeItemCount(b.selectedItems);
+    const dateStr    = b.eventStart
+      ? new Date(b.eventStart).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' })
+      : '—';
+
+    return `
+      <tr style="cursor:pointer;" onclick="toggleDetail('${b._id}')">
+        <td><strong style="color:var(--green);font-size:13px;">${b.confirmationRef || '—'}</strong></td>
+        <td>
+          <div style="font-weight:600;">${b.customerName || '—'}</div>
+          <div style="font-size:12px;color:var(--muted);">${b.email || ''}</div>
+        </td>
+        <td>${dateStr}</td>
+        <td>${itemCount}</td>
+        <td style="font-weight:600;">$${(b.totalPrice || 0).toLocaleString()}</td>
+        <td><span class="badge badge-${b.status || 'pending'}">${cap(b.status || 'pending')}</span></td>
+        <td onclick="event.stopPropagation()">
+          <div class="actions">
+            ${b.status === 'pending' ? `
+              <button class="act-btn" onclick="updateStatus('${b._id}','confirmed')">Confirm</button>
+            ` : ''}
+            ${b.status === 'confirmed' ? `
+              <button class="act-btn" onclick="updateStatus('${b._id}','completed')">Complete</button>
+            ` : ''}
+            ${b.status !== 'cancelled' && b.status !== 'completed' ? `
+              <button class="act-btn danger" onclick="cancelBooking('${b._id}')">Cancel</button>
+            ` : ''}
+          </div>
+        </td>
+      </tr>
+      ${isExpanded ? detailRow(b) : ''}
+    `;
+  }).join('');
+}
+
+// ── Expandable detail row ─────────────────────────────────────────
+function detailRow(b) {
+  let itemsHtml = '—';
+  try {
+    const items = JSON.parse(b.selectedItems || '[]');
+    if (items.length) {
+      itemsHtml = items.map(i =>
+        `${i.name} — $${i.pricePerDay}/day × ${i.days || b.days || 1} day(s) = $${i.lineTotal || (i.pricePerDay * (b.days || 1))}`
+      ).join('<br>');
+    }
+  } catch {}
+
+  const endDate = b.eventEnd
+    ? new Date(b.eventEnd).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' })
+    : '—';
+
+  return `
+    <tr class="detail-row">
+      <td colspan="7">
+        <div class="detail-grid">
+          <div class="detail-item"><strong>Phone</strong>${b.phone || '—'}</div>
+          <div class="detail-item"><strong>Event End</strong>${endDate}</div>
+          <div class="detail-item"><strong>Location</strong>${b.location || '—'}</div>
+          <div class="detail-item"><strong>Submitted</strong>${b.submittedAt ? new Date(b.submittedAt).toLocaleDateString() : '—'}</div>
+          <div class="detail-item" style="grid-column:1/-1;"><strong>Items</strong>${itemsHtml}</div>
+        </div>
+      </td>
+    </tr>
+  `;
+}
+
+// ── Actions ───────────────────────────────────────────────────────
+function updateStatus(id, status) {
+  window.parent.postMessage(JSON.stringify({ type: 'updateStatus', bookingId: id, status }), '*');
+}
+
+function cancelBooking(id) {
+  if (confirm('Cancel this booking? This cannot be undone.')) {
+    updateStatus(id, 'cancelled');
+  }
+}
+
+function toggleDetail(id) {
+  expandedId = expandedId === id ? null : id;
+  renderTable(activeFilter);
+}
+
+// ── Filter ────────────────────────────────────────────────────────
+function filter(f) {
+  activeFilter = f;
+  expandedId = null;
+  ['all','pending','confirmed','completed','cancelled'].forEach(s => {
+    document.getElementById('pill-' + s).classList.toggle('active', s === f);
+  });
+  renderTable(f);
+}
+
+// ── Refresh ───────────────────────────────────────────────────────
+function requestRefresh() {
+  document.getElementById('lastUpdated').textContent = 'Refreshing…';
+  window.parent.postMessage(JSON.stringify({ type: 'refresh' }), '*');
+}
+
+// ── Helpers ───────────────────────────────────────────────────────
+function safeItemCount(json) {
+  try {
+    const arr = JSON.parse(json || '[]');
+    return arr.length + ' item' + (arr.length !== 1 ? 's' : '');
+  } catch { return '—'; }
+}
+
+function cap(s) {
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : '—';
+}
+</script>
+</body>
+</html>

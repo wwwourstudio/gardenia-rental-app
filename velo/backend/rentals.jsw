@@ -1,0 +1,99 @@
+// ═══════════════════════════════════════════════════════════════
+// VELO BACKEND — rentals.jsw
+// ───────────────────────────────────────────────────────────────
+// HOW TO INSTALL:
+//   Wix Editor → Dev Mode (toggle top-right) → Code Files panel
+//   → Backend → New File → name it: rentals.jsw
+//   Paste this entire file, then Save.
+//
+// The .jsw extension makes these functions callable from page code
+// via:  import { getRentalItems } from 'backend/rentals';
+// ═══════════════════════════════════════════════════════════════
+
+import wixData from 'wix-data';
+
+// ── getRentalItems ─────────────────────────────────────────────
+// Returns all available items from the RentalItems CMS collection.
+// Called by the Rental Quote page when it first loads.
+export async function getRentalItems() {
+  const { items } = await wixData
+    .query('RentalItems')
+    .eq('available', true)
+    .ascending('category')
+    .limit(100)
+    .find({ suppressAuth: true });
+  return items;
+}
+
+// ── createRentalBooking ────────────────────────────────────────
+// Saves a quote request to the RentalBookings CMS collection.
+// Called when the customer submits the 5-step quote form.
+export async function createRentalBooking(data) {
+  const days = calcDays(data.eventStart, data.eventEnd);
+
+  const booking = await wixData.insert('RentalBookings', {
+    customerName:  data.customerName,
+    email:         data.email,
+    phone:         data.phone || '',
+    eventStart:    new Date(data.eventStart),
+    eventEnd:      new Date(data.eventEnd),
+    location:      data.location || '',
+    selectedItems: JSON.stringify(data.selectedItems),
+    days,
+    totalPrice:    data.totalPrice,
+    status:        'pending',
+    submittedAt:   new Date(),
+    confirmationRef: 'GRD-' + genRef(),
+  }, { suppressAuth: true });
+
+  // Send confirmation email.
+  // Requires a triggered email template named 'rentalConfirmation' in
+  // Wix CRM → Triggered Emails. If not set up yet, this block is skipped.
+  try {
+    const { triggeredEmails } = await import('wix-crm-backend');
+    await triggeredEmails.emailContact('rentalConfirmation', data.email, {
+      variables: {
+        customerName:    data.customerName,
+        confirmationRef: booking.confirmationRef,
+        eventStart:      data.eventStart,
+        eventEnd:        data.eventEnd,
+        totalPrice:      '$' + data.totalPrice,
+      },
+    });
+  } catch (e) {
+    console.warn('Confirmation email skipped:', e.message);
+  }
+
+  return {
+    confirmationRef: booking.confirmationRef,
+    bookingId:       booking._id,
+  };
+}
+
+// ── getBookings ────────────────────────────────────────────────
+// Returns all bookings for the admin dashboard, newest first.
+export async function getBookings(limit = 200) {
+  const { items } = await wixData
+    .query('RentalBookings')
+    .descending('submittedAt')
+    .limit(limit)
+    .find();
+  return items;
+}
+
+// ── updateBookingStatus ────────────────────────────────────────
+// Updates the status of a booking.
+// Valid values: 'pending' | 'confirmed' | 'completed' | 'cancelled'
+export async function updateBookingStatus(bookingId, status) {
+  const item = await wixData.get('RentalBookings', bookingId);
+  return wixData.update('RentalBookings', { ...item, status });
+}
+
+// ── Helpers ───────────────────────────────────────────────────
+function genRef() {
+  return Math.random().toString(36).substr(2, 6).toUpperCase();
+}
+
+function calcDays(start, end) {
+  return Math.max(1, Math.ceil((new Date(end) - new Date(start)) / 86400000));
+}

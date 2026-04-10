@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!--
+  HOW TO INSTALL:
+  1. In Wix Editor, create a new page called "Rental Quote"
+  2. Add an HTML iFrame element (Add Panel → Embed → HTML iFrame)
+  3. Click the element → Edit Code → paste this entire file
+  4. Stretch the element to fill the page (set height to ~900px+)
+  5. Also add the page code from rental-quote-page.js to the page's
+     code panel (click the </> icon at the bottom of the Editor)
+-->
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --green:       #4a7c59;
+  --green-light: #e8f0eb;
+  --cream:       #f9f5ef;
+  --gold:        #8b7355;
+  --border:      #d4c9b8;
+  --text:        #2c2c2c;
+  --muted:       #7a7a7a;
+  --radius:      8px;
+}
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  background: var(--cream);
+  color: var(--text);
+  padding: 0;
+  min-height: 100vh;
+}
+
+/* ── Progress ──────────────────────────────── */
+.progress-wrap {
+  padding: 20px 20px 0;
+  text-align: center;
+}
+.progress-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--border);
+  transition: background 0.2s;
+}
+.dot.done   { background: var(--gold); }
+.dot.active { background: var(--green); }
+.progress-labels {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+}
+.plabel {
+  font-size: 11px;
+  color: var(--muted);
+}
+.plabel.active { color: var(--green); font-weight: 600; }
+
+/* ── Container ─────────────────────────────── */
+.container {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 24px 20px;
+}
+
+/* ── Headings ──────────────────────────────── */
+.step-h {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 22px;
+  color: var(--green);
+  margin-bottom: 4px;
+}
+.step-sub {
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 22px;
+}
+
+/* ── Fields ────────────────────────────────── */
+.field { margin-bottom: 16px; }
+.field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+.field input, .field textarea {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 15px;
+  font-family: inherit;
+  background: #fff;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.field input:focus, .field textarea:focus {
+  border-color: var(--green);
+}
+.row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 480px) { .row-2 { grid-template-columns: 1fr; } }
+
+/* ── Buttons ───────────────────────────────── */
+.btn-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 24px;
+  gap: 12px;
+}
+.btn {
+  padding: 12px 28px;
+  border-radius: 30px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: opacity 0.15s;
+}
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-primary   { background: var(--green); color: #fff; }
+.btn-secondary {
+  background: #fff;
+  color: var(--green);
+  border: 1.5px solid var(--green);
+}
+.btn-primary:hover:not(:disabled)   { opacity: 0.88; }
+.btn-secondary:hover:not(:disabled) { background: var(--green-light); }
+
+/* ── Category pills ────────────────────────── */
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.pill {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  cursor: pointer;
+  border: 1.5px solid var(--border);
+  background: #fff;
+  color: var(--text);
+  transition: all 0.15s;
+}
+.pill.active {
+  background: var(--green);
+  color: #fff;
+  border-color: var(--green);
+}
+
+/* ── Item grid ─────────────────────────────── */
+.item-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 12px;
+  margin-bottom: 70px;
+}
+.item-card {
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  background: #fff;
+  cursor: pointer;
+  overflow: hidden;
+  position: relative;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.item-card:hover    { border-color: var(--green); }
+.item-card.selected {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px var(--green-light);
+}
+.item-card img      { width: 100%; height: 100px; object-fit: cover; display: block; }
+.card-body          { padding: 10px 12px; }
+.card-name          { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+.card-cat           { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+.card-price         { font-size: 14px; color: var(--green); font-weight: 700; }
+.check-badge {
+  position: absolute; top: 8px; right: 8px;
+  background: var(--green); color: #fff;
+  width: 22px; height: 22px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700;
+}
+
+/* ── Sticky total bar ──────────────────────── */
+.total-bar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: var(--green);
+  color: #fff;
+  padding: 14px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 15px;
+  font-weight: 600;
+  z-index: 100;
+}
+
+/* ── Summary ───────────────────────────────── */
+.sum-section { margin-bottom: 20px; }
+.sum-section h4 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+.sum-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+.sum-row:last-child { border-bottom: none; }
+.sum-total {
+  display: flex;
+  justify-content: space-between;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--green);
+  padding-top: 14px;
+}
+
+/* ── Error box ─────────────────────────────── */
+.error-box {
+  background: #fff0f0;
+  border: 1px solid #f0b3b3;
+  color: #c0392b;
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  font-size: 14px;
+  margin-bottom: 16px;
+  display: none;
+}
+
+/* ── Success ───────────────────────────────── */
+.success-wrap {
+  text-align: center;
+  padding: 48px 20px;
+  max-width: 520px;
+  margin: 0 auto;
+}
+.success-icon {
+  width: 68px; height: 68px;
+  background: var(--green-light);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 30px;
+  margin: 0 auto 20px;
+}
+.success-ref {
+  background: var(--green-light);
+  border-radius: var(--radius);
+  padding: 14px 20px;
+  font-family: Georgia, serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--green);
+  letter-spacing: 0.12em;
+  margin: 18px 0;
+}
+.success-msg {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.7;
+  margin-bottom: 8px;
+}
+
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- Progress -->
+<div class="progress-wrap">
+  <div class="progress-dots" id="dots"></div>
+  <div class="progress-labels" id="plabels"></div>
+</div>
+
+<!-- Step 1: Dates -->
+<div class="container" id="step1">
+  <h2 class="step-h">When is your event?</h2>
+  <p class="step-sub">We'll calculate pricing based on your rental duration.</p>
+  <div class="row-2">
+    <div class="field">
+      <label for="startDate">Start Date *</label>
+      <input type="date" id="startDate">
+    </div>
+    <div class="field">
+      <label for="endDate">End Date *</label>
+      <input type="date" id="endDate">
+    </div>
+  </div>
+  <div id="daysHint" style="font-size:13px;color:var(--green);min-height:20px;"></div>
+  <div class="btn-row">
+    <span></span>
+    <button class="btn btn-primary" onclick="goTo(2)">Next →</button>
+  </div>
+</div>
+
+<!-- Step 2: Location -->
+<div class="container hidden" id="step2">
+  <h2 class="step-h">Where is your event?</h2>
+  <p class="step-sub">Venue name or address — helps us plan delivery logistics.</p>
+  <div class="field">
+    <label for="location">Venue / Address *</label>
+    <input type="text" id="location" placeholder="e.g. The Grand Ballroom, 123 Main St, Dallas TX">
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-secondary" onclick="goTo(1)">← Back</button>
+    <button class="btn btn-primary" onclick="goTo(3)">Next →</button>
+  </div>
+</div>
+
+<!-- Step 3: Select Items -->
+<div class="hidden" id="step3">
+  <div class="container" style="padding-bottom:80px;">
+    <h2 class="step-h">Select your rental items</h2>
+    <p class="step-sub">Tap any item to add it. Tap again to remove.</p>
+    <div class="pills" id="catPills"></div>
+    <div id="itemsLoading" style="text-align:center;padding:48px 0;color:var(--muted);">
+      Loading items…
+    </div>
+    <div class="item-grid hidden" id="itemGrid"></div>
+    <div class="btn-row" style="padding-bottom:80px;">
+      <button class="btn btn-secondary" onclick="goTo(2)">← Back</button>
+      <button class="btn btn-primary" onclick="goTo(4)">Next →</button>
+    </div>
+  </div>
+  <div class="total-bar">
+    <span id="totalItemsLabel">0 items selected</span>
+    <span id="totalPriceLabel">$0</span>
+  </div>
+</div>
+
+<!-- Step 4: Your Info -->
+<div class="container hidden" id="step4">
+  <h2 class="step-h">Your information</h2>
+  <p class="step-sub">We'll send your confirmation here.</p>
+  <div class="field">
+    <label for="custName">Full Name *</label>
+    <input type="text" id="custName" placeholder="Jane Smith">
+  </div>
+  <div class="row-2">
+    <div class="field">
+      <label for="custEmail">Email *</label>
+      <input type="email" id="custEmail" placeholder="jane@example.com">
+    </div>
+    <div class="field">
+      <label for="custPhone">Phone (optional)</label>
+      <input type="tel" id="custPhone" placeholder="(214) 555-0100">
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-secondary" onclick="goTo(3)">← Back</button>
+    <button class="btn btn-primary" onclick="goTo(5)">Review →</button>
+  </div>
+</div>
+
+<!-- Step 5: Review & Submit -->
+<div class="container hidden" id="step5">
+  <h2 class="step-h">Review your quote</h2>
+  <p class="step-sub">Everything look right? Submit to send your request to Gardenia.</p>
+  <div class="error-box" id="errorBox"></div>
+
+  <div class="sum-section">
+    <h4>Event Details</h4>
+    <div class="sum-row"><span>Dates</span><span id="sDates">—</span></div>
+    <div class="sum-row"><span>Duration</span><span id="sDuration">—</span></div>
+    <div class="sum-row"><span>Location</span><span id="sLocation">—</span></div>
+  </div>
+
+  <div class="sum-section">
+    <h4>Rental Items</h4>
+    <div id="sItems"></div>
+    <div class="sum-total">
+      <span>Grand Total</span>
+      <span id="sTotal">$0</span>
+    </div>
+  </div>
+
+  <div class="sum-section">
+    <h4>Your Contact</h4>
+    <div class="sum-row"><span>Name</span><span id="sName">—</span></div>
+    <div class="sum-row"><span>Email</span><span id="sEmail">—</span></div>
+    <div class="sum-row" id="sPhoneRow"><span>Phone</span><span id="sPhone">—</span></div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-secondary" onclick="goTo(4)">← Back</button>
+    <button class="btn btn-primary" id="submitBtn" onclick="submitQuote()">
+      Submit Quote Request
+    </button>
+  </div>
+</div>
+
+<!-- Success -->
+<div class="hidden" id="successScreen">
+  <div class="success-wrap">
+    <div class="success-icon">✓</div>
+    <h2 class="step-h" style="text-align:center;">Quote Request Submitted!</h2>
+    <p class="success-msg">
+      Thank you! We'll review your request and be in touch within 24 hours.
+      Your confirmation number is:
+    </p>
+    <div class="success-ref" id="successRef"></div>
+    <p class="success-msg" id="successEmailNote"></p>
+    <button class="btn btn-secondary" style="margin-top:24px;" onclick="resetForm()">
+      Submit Another Quote
+    </button>
+  </div>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────
+let step = 1;
+let catalog = [];
+let selected = {};
+let activeCat = 'All';
+
+const STEPS     = ['Dates', 'Location', 'Items', 'Info', 'Review'];
+const STEP_IDS  = ['step1','step2','step3','step4','step5'];
+
+// ── Boot ───────────────────────────────────────────────────────
+buildProgress();
+showStep(1);
+window.parent.postMessage(JSON.stringify({ type: 'ready' }), '*');
+
+// ── Message handler (receives data from Wix page code) ─────────
+window.addEventListener('message', function (e) {
+  let msg;
+  try { msg = typeof e.data === 'string' ? JSON.parse(e.data) : e.data; }
+  catch { return; }
+
+  if (msg.type === 'items') {
+    catalog = msg.data || [];
+    buildCatPills();
+    renderItems();
+    document.getElementById('itemsLoading').classList.add('hidden');
+    document.getElementById('itemGrid').classList.remove('hidden');
+  }
+  if (msg.type === 'success') {
+    showSuccess(msg.confirmationRef);
+  }
+  if (msg.type === 'error') {
+    showError(msg.message);
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = false;
+    btn.textContent = 'Submit Quote Request';
+  }
+});
+
+// ── Navigation ─────────────────────────────────────────────────
+function goTo(n) {
+  if (n > step && !validate(step)) return;
+  step = n;
+  showStep(n);
+  if (n === 5) buildSummary();
+  window.scrollTo(0, 0);
+}
+
+function showStep(n) {
+  STEP_IDS.forEach((id, i) => {
+    document.getElementById(id).classList.toggle('hidden', i + 1 !== n);
+  });
+  document.getElementById('successScreen').classList.add('hidden');
+  updateProgress();
+}
+
+// ── Validation ─────────────────────────────────────────────────
+function validate(n) {
+  if (n === 1) {
+    const s = v('startDate'), e = v('endDate');
+    if (!s || !e) { alert('Please select both start and end dates.'); return false; }
+    if (new Date(e) < new Date(s)) { alert('End date must be on or after start date.'); return false; }
+  }
+  if (n === 2) {
+    if (!v('location')) { alert('Please enter the event venue or address.'); return false; }
+  }
+  if (n === 3) {
+    if (!Object.keys(selected).length) { alert('Please select at least one rental item.'); return false; }
+  }
+  if (n === 4) {
+    if (!v('custName'))  { alert('Please enter your name.'); return false; }
+    if (!v('custEmail') || !v('custEmail').includes('@')) {
+      alert('Please enter a valid email address.'); return false;
+    }
+  }
+  return true;
+}
+
+// ── Items ───────────────────────────────────────────────────────
+function buildCatPills() {
+  const cats = ['All', ...new Set(catalog.map(i => i.category).filter(Boolean))];
+  document.getElementById('catPills').innerHTML = cats.map(c =>
+    `<div class="pill${c === activeCat ? ' active' : ''}" onclick="filterCat('${c}')">${c}</div>`
+  ).join('');
+}
+
+function filterCat(cat) {
+  activeCat = cat;
+  buildCatPills();
+  renderItems();
+}
+
+function renderItems() {
+  const list = activeCat === 'All' ? catalog : catalog.filter(i => i.category === activeCat);
+  document.getElementById('itemGrid').innerHTML = list.map(item => `
+    <div class="item-card${selected[item._id] ? ' selected' : ''}" onclick="toggle('${item._id}')">
+      ${selected[item._id] ? '<div class="check-badge">✓</div>' : ''}
+      ${item.image ? `<img src="${item.image}" alt="${item.name}" onerror="this.style.display='none'">` : ''}
+      <div class="card-body">
+        <div class="card-name">${item.name}</div>
+        <div class="card-cat">${item.category || ''}</div>
+        <div class="card-price">$${item.pricePerDay}/day</div>
+      </div>
+    </div>
+  `).join('');
+  updateTotalBar();
+}
+
+function toggle(id) {
+  if (selected[id]) delete selected[id]; else selected[id] = true;
+  renderItems();
+}
+
+function updateTotalBar() {
+  const days = calcDays();
+  const ids = Object.keys(selected);
+  const total = ids.reduce((s, id) => {
+    const item = catalog.find(i => i._id === id);
+    return s + (item ? item.pricePerDay * days : 0);
+  }, 0);
+  document.getElementById('totalItemsLabel').textContent =
+    `${ids.length} item${ids.length !== 1 ? 's' : ''} selected`;
+  document.getElementById('totalPriceLabel').textContent = '$' + total.toLocaleString();
+}
+
+// ── Dates ───────────────────────────────────────────────────────
+document.getElementById('startDate').addEventListener('change', hintDays);
+document.getElementById('endDate').addEventListener('change', hintDays);
+
+function hintDays() {
+  const d = calcDays();
+  const s = v('startDate'), e = v('endDate');
+  document.getElementById('daysHint').textContent =
+    (s && e && new Date(e) >= new Date(s)) ? `${d} day${d !== 1 ? 's' : ''}` : '';
+}
+
+function calcDays() {
+  const s = v('startDate'), e = v('endDate');
+  if (!s || !e || new Date(e) < new Date(s)) return 1;
+  return Math.max(1, Math.ceil((new Date(e) - new Date(s)) / 86400000));
+}
+
+// ── Summary ─────────────────────────────────────────────────────
+function buildSummary() {
+  const days = calcDays();
+  const s = v('startDate'), e = v('endDate');
+
+  set('sDates',    `${fmt(s)} – ${fmt(e)}`);
+  set('sDuration', `${days} day${days !== 1 ? 's' : ''}`);
+  set('sLocation', v('location'));
+  set('sName',     v('custName'));
+  set('sEmail',    v('custEmail'));
+  set('sPhone',    v('custPhone') || '—');
+
+  const selItems = Object.keys(selected).map(id => {
+    const item = catalog.find(i => i._id === id);
+    return { ...item, lineTotal: item.pricePerDay * days };
+  });
+  const total = selItems.reduce((s, i) => s + i.lineTotal, 0);
+
+  document.getElementById('sItems').innerHTML = selItems.map(i => `
+    <div class="sum-row">
+      <span>${i.name}</span>
+      <span>$${i.pricePerDay}/day × ${days} = $${i.lineTotal.toLocaleString()}</span>
+    </div>
+  `).join('');
+  set('sTotal', '$' + total.toLocaleString());
+}
+
+// ── Submit ──────────────────────────────────────────────────────
+function submitQuote() {
+  const days = calcDays();
+  const selItems = Object.keys(selected).map(id => {
+    const item = catalog.find(i => i._id === id);
+    return { _id: id, name: item.name, category: item.category,
+             pricePerDay: item.pricePerDay, lineTotal: item.pricePerDay * days };
+  });
+  const total = selItems.reduce((s, i) => s + i.lineTotal, 0);
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting…';
+  document.getElementById('errorBox').style.display = 'none';
+
+  window.parent.postMessage(JSON.stringify({
+    type: 'submit',
+    data: {
+      eventStart:   v('startDate'),
+      eventEnd:     v('endDate'),
+      location:     v('location'),
+      customerName: v('custName'),
+      email:        v('custEmail'),
+      phone:        v('custPhone'),
+      selectedItems: selItems,
+      totalPrice:   total,
+    },
+  }), '*');
+}
+
+// ── Success / Error ─────────────────────────────────────────────
+function showSuccess(ref) {
+  STEP_IDS.forEach(id => document.getElementById(id).classList.add('hidden'));
+  document.getElementById('successScreen').classList.remove('hidden');
+  document.getElementById('successRef').textContent = ref;
+  document.getElementById('successEmailNote').textContent =
+    'A confirmation will be sent to ' + v('custEmail');
+  updateProgress();
+  window.scrollTo(0, 0);
+}
+
+function showError(msg) {
+  const box = document.getElementById('errorBox');
+  box.textContent = msg || 'Something went wrong. Please try again.';
+  box.style.display = 'block';
+}
+
+function resetForm() {
+  selected = {}; activeCat = 'All'; step = 1;
+  ['startDate','endDate','location','custName','custEmail','custPhone']
+    .forEach(id => { document.getElementById(id).value = ''; });
+  document.getElementById('errorBox').style.display = 'none';
+  showStep(1);
+}
+
+// ── Progress UI ─────────────────────────────────────────────────
+function buildProgress() {
+  document.getElementById('dots').innerHTML =
+    STEPS.map((_, i) => `<div class="dot" id="dot${i+1}"></div>`).join('');
+  document.getElementById('plabels').innerHTML =
+    STEPS.map((s, i) => `<div class="plabel" id="pl${i+1}">${s}</div>`).join('');
+}
+
+function updateProgress() {
+  STEPS.forEach((_, i) => {
+    const n = i + 1;
+    document.getElementById('dot' + n).className =
+      'dot' + (n < step ? ' done' : n === step ? ' active' : '');
+    document.getElementById('pl' + n).className =
+      'plabel' + (n === step ? ' active' : '');
+  });
+}
+
+// ── Tiny helpers ────────────────────────────────────────────────
+function v(id)      { return document.getElementById(id).value.trim(); }
+function set(id, t) { document.getElementById(id).textContent = t; }
+function fmt(d)     {
+  if (!d) return '—';
+  return new Date(d + 'T12:00:00').toLocaleDateString('en-US',
+    { month: 'short', day: 'numeric', year: 'numeric' });
+}
+</script>
+</body>
+</html>

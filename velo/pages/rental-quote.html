@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <!--
   HOW TO INSTALL:
   1. In Wix Editor, create a new page called "Rental Quote"
@@ -236,6 +238,22 @@ body {
   padding-top: 14px;
 }
 
+/* ── Map ───────────────────────────────────── */
+#mapWrap {
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1.5px solid var(--border);
+  margin-top: 16px;
+  height: 260px;
+}
+#locationMap { width: 100%; height: 100%; }
+.map-note {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 8px;
+  text-align: center;
+}
+
 /* ── Error box ─────────────────────────────── */
 .error-box {
   background: #fff0f0;
@@ -321,6 +339,10 @@ body {
     <label for="location">Venue / Address *</label>
     <input type="text" id="location" placeholder="e.g. The Grand Ballroom, 123 Main St, Dallas TX">
   </div>
+  <div id="mapWrap">
+    <div id="locationMap"></div>
+  </div>
+  <p class="map-note">We deliver within approximately 60 miles of Dallas, TX</p>
   <div class="btn-row">
     <button class="btn btn-secondary" onclick="goTo(1)">← Back</button>
     <button class="btn btn-primary" onclick="goTo(3)">Next →</button>
@@ -470,6 +492,7 @@ function goTo(n) {
   if (n > step && !validate(step)) return;
   step = n;
   showStep(n);
+  if (n === 2) setTimeout(initMap, 50);
   if (n === 5) buildSummary();
   window.scrollTo(0, 0);
 }
@@ -676,6 +699,46 @@ function fmt(d)     {
   return new Date(d + 'T12:00:00').toLocaleDateString('en-US',
     { month: 'short', day: 'numeric', year: 'numeric' });
 }
+
+// ── Delivery radius map (Leaflet, no API key needed) ─────────────
+// Gardenia HQ — Dallas, TX
+const DALLAS_LAT = 32.7767;
+const DALLAS_LNG = -96.7970;
+const DELIVERY_MILES = 60;
+const KM_PER_MILE = 1.60934;
+
+let _map = null;
+let _venueMarker = null;
+
+function initMap() {
+  if (_map) { _map.invalidateSize(); return; }
+  _map = L.map('locationMap', { zoomControl: true, scrollWheelZoom: false })
+    .setView([DALLAS_LAT, DALLAS_LNG], 9);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom: 18,
+  }).addTo(_map);
+
+  // Delivery radius circle
+  L.circle([DALLAS_LAT, DALLAS_LNG], {
+    radius: DELIVERY_MILES * KM_PER_MILE * 1000,
+    color: '#4a7c59',
+    fillColor: '#4a7c59',
+    fillOpacity: 0.10,
+    weight: 2,
+  }).addTo(_map);
+
+  // Gardenia HQ marker
+  const gardeniaIcon = L.divIcon({
+    html: '<div style="background:#4a7c59;width:14px;height:14px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 2px #4a7c59;"></div>',
+    className: '', iconAnchor: [7, 7],
+  });
+  L.marker([DALLAS_LAT, DALLAS_LNG], { icon: gardeniaIcon })
+    .addTo(_map)
+    .bindPopup('<strong>Gardenia Event Decor</strong><br>Dallas, TX');
+}
+
 </script>
 </body>
 </html>

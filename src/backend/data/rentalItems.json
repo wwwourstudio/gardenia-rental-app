@@ -1,0 +1,140 @@
+{
+  "_note": "Seed data for the RentalItems CMS collection. To import: Wix Dashboard → CMS → RentalItems → Import, or paste each item via the admin dashboard page. All 8 categories are represented across 15 items.",
+  "items": [
+    {
+      "name": "Gold Geometric Arch",
+      "category": "Arches & Backdrops",
+      "description": "A stunning hexagonal gold-frame arch — perfect as a ceremony backdrop or photo opportunity focal point. 8ft tall × 6ft wide.",
+      "pricePerDay": 150,
+      "image": "",
+      "available": true,
+      "featured": true
+    },
+    {
+      "name": "Ivory Silk Backdrop Panel",
+      "category": "Arches & Backdrops",
+      "description": "Floor-length sheer ivory silk panel, 10ft × 8ft. Ideal for head-table backdrops, ceremony walls, or photo stations.",
+      "pricePerDay": 95,
+      "image": "",
+      "available": true,
+      "featured": false
+    },
+    {
+      "name": "White Floral Balloon Arch",
+      "category": "Arches & Backdrops",
+      "description": "Lush organic balloon arch in blush, ivory, and sage — a Dallas bridal shower and quinceañera favorite. Approx. 10ft wide.",
+      "pricePerDay": 200,
+      "image": "",
+      "available": true,
+      "featured": true
+    },
+    {
+      "name": "Ivory Chiffon Draping Panel",
+      "category": "Linens & Draping",
+      "description": "Sheer ivory chiffon panels for ceiling draping, photo backdrops, or elegant chair sashes. Sold per panel (approx. 10ft).",
+      "pricePerDay": 80,
+      "image": "",
+      "available": true,
+      "featured": false
+    },
+    {
+      "name": "Champagne Satin Table Runner",
+      "category": "Linens & Draping",
+      "description": "Luxurious champagne satin runner, fits 6ft and 8ft banquet tables. Adds warmth and elegance to any tablescape.",
+      "pricePerDay": 25,
+      "image": "",
+      "available": true,
+      "featured": false
+    },
+    {
+      "name": "White Floor-Length Tablecloth",
+      "category": "Linens & Draping",
+      "description": "Crisp white floor-length tablecloth for standard 60\" round or 8ft banquet tables. Wrinkle-resistant polyester.",
+      "pricePerDay": 15,
+      "image": "",
+      "available": true,
+      "featured": false
+    },
+    {
+      "name": "Crystal Candelabra Centerpiece",
+      "category": "Centerpieces",
+      "description": "Tall 5-arm crystal candelabra (32\" height) — holds taper or pillar candles for dramatic, romantic table settings.",
+      "pricePerDay": 75,
+      "image": "",
+      "available": true,
+      "featured": true
+    },
+    {
+      "name": "Gold Geometric Vase",
+      "category": "Centerpieces",
+      "description": "Modern geometric gold metal vase, 12\" tall. Pairs beautifully with fresh, faux, or dried florals.",
+      "pricePerDay": 45,
+      "image": "",
+      "available": true,
+      "featured": false
+    },
+    {
+      "name": "Pearl Floral Pedestal Stand",
+      "category": "Centerpieces",
+      "description": "Elegant white-and-gold pedestal stand (36\" tall) for floral arrangements, wedding cakes, or decorative displays.",
+      "pricePerDay": 90,
+      "image": "",
+      "available": true,
+      "featured": false
+    },
+    {
+      "name": "Mirror Charger Plates (set of 10)",
+      "category": "Charger Plates & Tableware",
+      "description": "Glamorous mirror-finish charger plates, 13\" diameter. Sold in sets of 10 — transforms any place setting instantly.",
+      "pricePerDay": 5,
+      "image": "",
+      "available": true,
+      "featured": false
+    },
+    {
+      "name": "Gold-Rimmed Charger Plates (set of 10)",
+      "category": "Charger Plates & Tableware",
+      "description": "Classic white charger plates with a brushed 24K gold rim, 13\" diameter. Set of 10. Clean, timeless elegance.",
+      "pricePerDay": 4,
+      "image": "",
+      "available": true,
+      "featured": false
+    },
+    {
+      "name": "Edison String Lights (20ft strand)",
+      "category": "Lighting",
+      "description": "Warm-glow Edison bulb string lights, 20ft with 20 vintage bulbs. Perfect for canopy, pergola, or perimeter lighting.",
+      "pricePerDay": 95,
+      "image": "",
+      "available": true,
+      "featured": true
+    },
+    {
+      "name": "Warm Uplighting Set (4 units)",
+      "category": "Lighting",
+      "description": "Set of 4 wireless LED uplights in warm white or amber. Battery-powered — no cables needed. Transforms any venue wall.",
+      "pricePerDay": 120,
+      "image": "",
+      "available": true,
+      "featured": false
+    },
+    {
+      "name": "Eucalyptus & Rose Garland (per 6ft)",
+      "category": "Floral",
+      "description": "Lush faux eucalyptus and blush rose garland, 6ft length. Ideal for table runners, mantels, or arch accents.",
+      "pricePerDay": 35,
+      "image": "",
+      "available": true,
+      "featured": false
+    },
+    {
+      "name": "Boxwood Hedge Panel",
+      "category": "Floral",
+      "description": "Realistic faux boxwood hedge panel, 4ft × 4ft. Popular backdrop for photo booths, bars, and lounge areas.",
+      "pricePerDay": 110,
+      "image": "",
+      "available": true,
+      "featured": false
+    }
+  ]
+}

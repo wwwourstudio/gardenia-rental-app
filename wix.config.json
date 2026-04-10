@@ -1,0 +1,13 @@
+{
+  "_comment": "Wix CLI project config. Replace <YOUR_APP_ID> with your App ID from https://dev.wix.com after running: npx @wix/cli@latest init",
+  "appId": "<YOUR_APP_ID>",
+  "components": {
+    "dashboard": [
+      {
+        "id": "rental-admin",
+        "name": "Rental Items Admin",
+        "componentType": "page"
+      }
+    ]
+  }
+}

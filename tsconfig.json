@@ -24,6 +24,9 @@
     "bookings.tsx",
     "calendar.tsx",
     "inventory.tsx",
-    "overview.tsx"
+    "overview.tsx",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "wix.config.js"
   ]
 }
